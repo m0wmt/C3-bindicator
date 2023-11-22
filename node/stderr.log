@@ -1,0 +1,859 @@
+/home/quirkyqu/bindicator/app.js:11
+    fs.readFile('./bindicator.csv', 'utf8', (err, data) => {
+    ^
+
+ReferenceError: fs is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:11:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+    var response = q.year + '-' + q.month + '-' + q.day + ' : ' + data;
+                                                                  ^
+
+ReferenceError: data is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:67)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+{ [Error: ENOENT: no such file or directory, open '/bindicator.csv']
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/bindicator.csv' }
+{ [Error: ENOENT: no such file or directory, open 'indicator.csv']
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'indicator.csv' }
+{ [Error: ENOENT: no such file or directory, open 'indicator.csv']
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'indicator.csv' }
+/home/quirkyqu/bindicator/app.js:13
+    var response = q + ' : ' + binData;
+                     ^
+
+TypeError: Cannot convert object to primitive value
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:13:22)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:13
+    var response = q + ' : ' + binData;
+                     ^
+
+TypeError: Cannot convert object to primitive value
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:13:22)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/getbintype.js:20
+            binType = line.substring(11);
+                    ^
+
+TypeError: Assignment to constant variable.
+    at Interface.rl.on (/home/quirkyqu/bindicator/getbintype.js:20:21)
+    at Interface.emit (events.js:198:13)
+    at Interface._onLine (readline.js:308:10)
+    at Interface._normalWrite (readline.js:451:12)
+    at ReadStream.ondata (readline.js:165:10)
+    at ReadStream.emit (events.js:198:13)
+    at addChunk (_stream_readable.js:288:12)
+    at readableAddChunk (_stream_readable.js:269:11)
+    at ReadStream.Readable.push (_stream_readable.js:224:10)
+    at lazyFs.read (internal/fs/streams.js:181:12)
+/home/quirkyqu/bindicator/getbintype.js:20
+            binType = line.substring(11);
+                    ^
+
+TypeError: Assignment to constant variable.
+    at Interface.rl.on (/home/quirkyqu/bindicator/getbintype.js:20:21)
+    at Interface.emit (events.js:198:13)
+    at Interface._onLine (readline.js:308:10)
+    at Interface._normalWrite (readline.js:451:12)
+    at ReadStream.ondata (readline.js:165:10)
+    at ReadStream.emit (events.js:198:13)
+    at addChunk (_stream_readable.js:288:12)
+    at readableAddChunk (_stream_readable.js:269:11)
+    at ReadStream.Readable.push (_stream_readable.js:224:10)
+    at lazyFs.read (internal/fs/streams.js:181:12)
+readline.js:207
+    input.on('data', ondata);
+          ^
+
+TypeError: input.on is not a function
+    at new Interface (readline.js:207:11)
+    at Object.createInterface (readline.js:75:10)
+    at Object.exports.binType (/home/quirkyqu/bindicator/getbintype.js:11:25)
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:8:22)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:11
+    res.end(response);
+            ^
+
+ReferenceError: response is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:11:13)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:11
+    res.end(response);
+            ^
+
+ReferenceError: response is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:11:13)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:8
+    var response = bt.binType(q.binDate.substring(0,10));    // Restrict input to the length of a date yyyy-mm-dd
+                                        ^
+
+TypeError: Cannot read property 'substring' of undefined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:8:41)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+_http_outgoing.js:690
+      throw new ERR_INVALID_ARG_TYPE('chunk', ['string', 'Buffer'], chunk);
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "chunk" argument must be one of type string or Buffer. Received type object
+    at ServerResponse.end (_http_outgoing.js:690:13)
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:12:9)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+_http_outgoing.js:690
+      throw new ERR_INVALID_ARG_TYPE('chunk', ['string', 'Buffer'], chunk);
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "chunk" argument must be one of type string or Buffer. Received type object
+    at ServerResponse.end (_http_outgoing.js:690:13)
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:12:9)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+_http_outgoing.js:690
+      throw new ERR_INVALID_ARG_TYPE('chunk', ['string', 'Buffer'], chunk);
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "chunk" argument must be one of type string or Buffer. Received type object
+    at ServerResponse.end (_http_outgoing.js:690:13)
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:12:9)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+_http_outgoing.js:690
+      throw new ERR_INVALID_ARG_TYPE('chunk', ['string', 'Buffer'], chunk);
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "chunk" argument must be one of type string or Buffer. Received type object
+    at ServerResponse.end (_http_outgoing.js:690:13)
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:12:9)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+_http_outgoing.js:690
+      throw new ERR_INVALID_ARG_TYPE('chunk', ['string', 'Buffer'], chunk);
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "chunk" argument must be one of type string or Buffer. Received type object
+    at ServerResponse.end (_http_outgoing.js:690:13)
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:12:9)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:15
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:15:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:15
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:15:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:15
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:15:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+_http_outgoing.js:690
+      throw new ERR_INVALID_ARG_TYPE('chunk', ['string', 'Buffer'], chunk);
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "chunk" argument must be one of type string or Buffer. Received type object
+    at ServerResponse.end (_http_outgoing.js:690:13)
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:9)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+_http_outgoing.js:690
+      throw new ERR_INVALID_ARG_TYPE('chunk', ['string', 'Buffer'], chunk);
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "chunk" argument must be one of type string or Buffer. Received type object
+    at ServerResponse.end (_http_outgoing.js:690:13)
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:9)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+_http_outgoing.js:690
+      throw new ERR_INVALID_ARG_TYPE('chunk', ['string', 'Buffer'], chunk);
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "chunk" argument must be one of type string or Buffer. Received type object
+    at ServerResponse.end (_http_outgoing.js:690:13)
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:9)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:15
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:15:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:15
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:15:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:15
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:15:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:15
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:15:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:15
+        response = bt.binType(query.get('binDate').substring(0,10));  // Restrict input to the length of a date yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:15:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:15
+        response = bt.binType(query.get('binDate').substring(0,10));  // Restrict input to the length of a date yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:15:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:17
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:17:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:17
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:17:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:22
+        response = 'binDate present, value is: ' + query.get('binDate');
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:22:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:22
+        response = 'binDate present, value is: ' + query.get('binDate');
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:22:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:14
+    if (query.has('binDate')) {     // binDate=yyyy-mm-dd available
+    ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:14:5)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:29
+    res.end(query.get('binDate'));
+            ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:29:13)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:29
+    res.end(query.get('binDate'));
+            ^
+
+ReferenceError: query is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:29:13)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:16
+        response = bt.binType(binDate.substring(0,10));  // Restrict input to the length of a date yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:16:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:16
+        response = bt.binType(binDate.substring(0,10));  // Restrict input to the length of a date yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:16:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:16
+        response = bt.binType(binDate.substring(0,10));  // Restrict input to the length of a date yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:16:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:19
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:19:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:16
+        response = bt.binType(binDate.substring(0,10));  // Restrict input to the length of a date yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:16:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:16
+        response = bt.binType(binDate.substring(0,10));  // Restrict input to the length of a date yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:16:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:16
+        response = bt.binType(binDate.substring(0,10));  // Restrict input to the length of a date yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:16:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:16
+        response = bt.binType(binDate.substring(0,10));  // Restrict input to the length of a date yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:16:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:16
+        response = bt.binType(binDate.substring(0,10));  // Restrict input to the length of a date yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:16:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:19
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:19:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:19
+        response = bt.binType(new Date().toISOString().slice(0, 10)); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:19:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+        response = bt.binType(today); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+        response = bt.binType(today); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:20
+        response = bt.binType(today); // Todays date, yyyy-mm-dd
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:20:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:21
+        response = today;
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:21:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:21
+        response = today;
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:21:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:21
+        response = today.toString();
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:21:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:21
+        response = today.toString();
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:21:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:21
+        response = today.toString();
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:21:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:21
+        response = today.toString();
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:21:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:21
+        response = today.toString();
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:21:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:21
+        response = today.toString();
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:21:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:21
+        response = new Date().toISOString().slice(0, 10);
+                 ^
+
+TypeError: Assignment to constant variable.
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:21:18)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:9
+    for (const line of fs.readFileSync('./bindicator.csv').toString().split('\n')) {
+                                                                      ^
+
+ReferenceError: fs is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:9:71)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:9
+    for (const line of fs.readFileSync('./bindicator.csv').toString().split('\n')) {
+                                                                      ^
+
+ReferenceError: fs is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:9:71)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:9
+    for (const line of fs.readFileSync('./bindicator.csv').toString().split('\n')) {
+                                                                      ^
+
+ReferenceError: fs is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:9:71)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:9
+    for (const line of fs.readFileSync('./bindicator.csv').toString().split('\n')) {
+                                                                      ^
+
+ReferenceError: fs is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:9:71)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:9
+    for (const line of fs.readFileSync('./bindicator.csv').toString().split('\n')) {
+                                                                      ^
+
+ReferenceError: fs is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:9:71)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:9
+    for (const line of fs.readFileSync('./bindicator.csv').toString().split('\n')) {
+                                                                      ^
+
+ReferenceError: fs is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:9:71)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:9
+    for (const line of fs.readFileSync('./bindicator.csv').toString().split('\n')) {
+                                                                      ^
+
+ReferenceError: fs is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:9:71)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:9
+    for (const line of fs.readFileSync('./bindicator.csv').toString().split('\n')) {
+                                                                      ^
+
+ReferenceError: fs is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:9:71)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+/home/quirkyqu/bindicator/app.js:9
+    for (const line of fs.readFileSync('./bindicator.csv').toString().split('\n')) {
+                                                                      ^
+
+ReferenceError: fs is not defined
+    at Server.<anonymous> (/home/quirkyqu/bindicator/app.js:9:71)
+    at Server.emit (events.js:203:15)
+    at parserOnIncoming (_http_server.js:695:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:111:17)
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
