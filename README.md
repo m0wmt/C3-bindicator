@@ -4,7 +4,7 @@ My version of 'bindicator' originally written by Darren Tarbard.
 
 This project was written using Visual Studio Code and the PlatformIO extension to manage the project.
 
-This project has 2 methods for retrieving what bin type is due for emptying in the current week. The first is a very simple node.js application I wrote on our website (I can not do what I want due to limited access) which returns the bin type and the second method is to download a .json file and do the logic on the ESP32-C3.  Due to our local council only releasing a picture of the bin collections at the biginning of each year I have to manually enter the values in to the .csv and .json files.  Due to the (current) limited access to our website because of the hosting company I am unable to install the libraries I would like to so I just used the .json file for both methods.
+This project has 2 methods for retrieving what bin type is due for emptying in the current week. The first is a very simple node.js application I wrote on our website (I can not do what I want due to limited access because of the hosting company) which returns the bin type and the second method is to download a .json file and do the logic on the ESP32-C3.  Due to our local council only releasing a picture of the bin collections at the biginning of each year I have to manually enter the values in to the .csv and .json files.  Due to the (current) limited access to our website I am unable to install the node.js libraries I would like to so I can just use the .json file for both methods.
 
 I am looking at storing the information in weekly segments to reduce the size of the file(s) but went for the quick and dirty method of one line per day to start with.
 
