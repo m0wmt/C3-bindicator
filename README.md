@@ -6,6 +6,8 @@ This project was written using Visual Studio Code and the PlatformIO extension t
 
 ESP32-C3 information: Chip Model ESP32-C3, ChipRevision 4, Cpu Freq 160, SDK Version v4.4.2
 
+ESP32-C3 and LEDs purchased via Aliexpress.
+
 Libraries used: NeoPixel, ArduinoJson.
 
 3D model of bin courtesy of Printables: https://www.printables.com/model/189899-wheelie-bin-for-the-bindicatorbindaycator, printed by my son-in-law
