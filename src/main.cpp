@@ -38,7 +38,7 @@ CLOG_NEW myLog1(maxEntries, maxEntryChars, NO_TRIGGER, NO_WRAP);
 #define PIN_WS2812B 0           // Output pin on ESP32-C3 that controls the LEDs
 #define NUM_PIXELS 4            // Number of LEDs (pixels) in the bin
 
-#define DIMMER 12               // hour to set LEDs dimmer
+#define DIMMER 13               // hour to set LEDs dimmer
 #define BRIGHTER 7              // hour to set LEDs brighter
 
 #define DIM 75                  // dim value for illumination of the LEDs
@@ -203,16 +203,15 @@ void setup() {
         Serial.println(myLog1.get(i));
     }
     Serial.println(F("\n"));
-    //delay(3000);  // serial output seems to be slow!
     #endif
 
     // Set up hardware timer
     //int one_second = 1000000;
     long one_minute = 1000000 * 60;
-    long minutes = one_minute * 5;   // 60=1hr 
+    long minutes = one_minute * 60;                 // 60=1hr - logic is written for 60 minute updates for now.
     My_timer = timerBegin(0, 80, true);
     timerAttachInterrupt(My_timer, &onTimerInterrupt, true);
-    timerAlarmWrite(My_timer, minutes, true);           // every 'n' minutes
+    timerAlarmWrite(My_timer, minutes, true);       // every 'n' minutes
     timerAlarmEnable(My_timer);
 }
 
