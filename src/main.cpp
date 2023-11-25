@@ -13,6 +13,7 @@
  * Flash Size 4194304, Flash Speed 80000000
  * 
  * v1: Initial version 
+ * v2: Ditch ISR timer for light sleep
  * 
  */
 
@@ -25,12 +26,12 @@
 #include "config.h"
 
 // CaptureLog setup
-#define CLOG_ENABLE true                        // this must be defined before cLog.h is included 
+#define CLOG_ENABLE fasle                        // this must be defined before cLog.h is included 
 #include "cLog.h"
 
 #if CLOG_ENABLE
-const uint16_t maxEntries = 25;
-const uint16_t maxEntryChars = 100;
+const uint16_t maxEntries = 30;
+const uint16_t maxEntryChars = 120;
 CLOG_NEW myLog1(maxEntries, maxEntryChars, NO_TRIGGER, NO_WRAP);
 #endif
 
@@ -38,10 +39,10 @@ CLOG_NEW myLog1(maxEntries, maxEntryChars, NO_TRIGGER, NO_WRAP);
 #define PIN_WS2812B 0           // Output pin on ESP32-C3 that controls the LEDs
 #define NUM_PIXELS 4            // Number of LEDs (pixels) in the bin
 
-#define DIMMER 13               // hour to set LEDs dimmer
+#define DIMMER 21               // hour to set LEDs dimmer
 #define BRIGHTER 7              // hour to set LEDs brighter
 
-#define DIM 75                  // dim value for illumination of the LEDs
+#define DIM 35                  // dim value for illumination of the LEDs
 #define BRIGHT 250              // bright value for illumination of the LEDs
 
 typedef enum {
@@ -58,77 +59,70 @@ typedef enum {
     JSON_ERROR
 } status_t;
 
-// Hardware timer for updating clock etc.
-hw_timer_t *My_timer = NULL;
-volatile bool update = false;
-static portMUX_TYPE myMux = portMUX_INITIALIZER_UNLOCKED;
+// Set up library to control LEDs
+Adafruit_NeoPixel ws2812b(NUM_PIXELS, PIN_WS2812B, NEO_GRB + NEO_KHZ800);
+
+const uint32_t whitePixel = ws2812b.Color(255, 255, 255);
+const uint32_t unlitPixel = ws2812b.Color(0, 0, 0);
+
+typedef struct {
+    uint32_t red = ws2812b.Color(255, 0, 0);
+    uint32_t green = ws2812b.Color(0, 255, 0);
+    uint32_t blue = ws2812b.Color(0, 0, 255);
+    uint32_t violet = ws2812b.Color(246, 0, 255);
+    uint32_t yellow = ws2812b.Color(255, 255, 0);
+} colours_t;
+
+const long sleep_duration = 45; // number of minutes to go to sleep
+
 
 /* Function prototypes */
+void goToSleep(void);
+bool enableWiFi(void);
+void disableWiFi(void);
+void logWakeupReason(void);
 void ntpTime(void);
 this_weeks_bins_t getBinColour(void);
 this_weeks_bins_t getBinColourFromFile(void);
 void illuminateBin(void);
-void setBinTypes(void);
 void updateBin(void);
 int getCurrentHour(void);
 void setBrightness(uint8_t brightness);
 
-// timer interrupt routine
-void IRAM_ATTR onTimerInterrupt() {
-    portENTER_CRITICAL_ISR(&myMux);
-    update = true;
-    portEXIT_CRITICAL_ISR(&myMux);
-}
-
 /* Globals etc. */
-WiFiClientSecure wifiClient;
-String ipAddress = "0:0:0:0";
-
 this_weeks_bins_t bin_type = BIN_ERROR;
 status_t status = NO_ERROR;
 uint8_t currentBrightness = 0;
 
-// Set up library to control LEDs
-Adafruit_NeoPixel ws2812b(NUM_PIXELS, PIN_WS2812B, NEO_GRB + NEO_KHZ800);
-
-// Define some standard colours for easier reference later
-uint32_t redPixel = ws2812b.Color(255, 0, 0);
-uint32_t greenPixel = ws2812b.Color(0, 255, 0);
-uint32_t bluePixel = ws2812b.Color(0, 0, 255);
-uint32_t violetPixel = ws2812b.Color(246, 0, 255);
-uint32_t yellowPixel = ws2812b.Color(255, 255, 0);
-
-const uint32_t whitePixel = ws2812b.Color(255, 255, 255);
-const uint32_t unlitPixel = ws2812b.Color(0, 0, 0);
+colours_t pixelColours;
 
 /**
  * @brief Set up the application, wifi, time and LEDs
  * 
  */
 void setup() {
-    int wifi_connect_counter = 0;
-    bool wifi_connected = true;
+    //bool wifi_connected = false;
 
     #if CLOG_ENABLE
     Serial.begin(115200);
     delay(5000); // delay for serial to begin, ESP32 can be slow to start serial output!	
+
+	logWakeupReason();
     #endif
  
     // Show 4 lights which will go out as everything starts up correctly.
     
-    // Set brightness using our own routine
+    // Set brightness using our own routine, very bright so any errors are visible!
     setBrightness(BRIGHT);
-
-    // Set up LEDs
     ws2812b.begin();                // Initialise WS2812B strip object (REQUIRED)
-   // ws2812b.setBrightness(BRIGHT);  
     ws2812b.show();                 // Initialise all pixels to off
 
     ws2812b.clear();
     // turn on all pixels, these will be extinguished if there are no 
-    // errors as we set up and get bin types.
+    // errors as we set up and get bin types.  This happens when the program 
+    // first launches only.
     for (int pixel = 0; pixel < NUM_PIXELS; pixel++) {          // for each pixel
-        ws2812b.setPixelColor(pixel, violetPixel);              // it only takes effect when pixels.show() is called
+        ws2812b.setPixelColor(pixel, pixelColours.violet);              // it only takes effect when pixels.show() is called
     }
     ws2812b.show();  // update to the WS2812B Led Strip
 
@@ -142,9 +136,125 @@ void setup() {
     Serial.printf("Flash Size %d, Flash Speed %d\n", ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
     Serial.println(F("##################################\n\n"));
     #endif
+    
+    if (enableWiFi() == true) {
+        // Turn off first error light
+        ws2812b.setPixelColor(0, unlitPixel);                
+        ws2812b.show();  // update to the WS2812B Led Strip
 
-    // Set up wifi
-    WiFi.disconnect();
+        CLOG(myLog1.add(), "IP Address: %s", WiFi.localIP().toString());
+
+        ntpTime();
+
+        // Turn off next eror light
+        ws2812b.setPixelColor(1, unlitPixel);                
+        ws2812b.show();  // update to the WS2812B Led Strip
+
+        CLOG(myLog1.add(), "WiFi, time and LED setup complete...");
+
+        updateBin();
+    } else {
+        CLOG(myLog1.add(), "Unable to connect to WiFi!");
+        status = WIFI_ERROR;
+    }
+
+    // set brightness depending on time, default is bright at startup
+    int currentHour = getCurrentHour();
+    if ((currentHour >= DIMMER) || (currentHour < BRIGHTER)) {
+        setBrightness(DIM);
+    } 
+    
+    illuminateBin();
+
+    disableWiFi();
+
+    goToSleep();
+}
+
+/**
+ * @brief Main loop
+ * 
+ */
+void loop(void) {
+    #if CLOG_ENABLE
+    Serial.begin(115200);
+    delay(5000); // delay for serial to begin, ESP32 can be slow to start serial output!	
+
+	logWakeupReason();
+    #endif
+
+    // TESTING ONLY //
+    ws2812b.clear();
+    ws2812b.setPixelColor(0, pixelColours.yellow);
+    ws2812b.setPixelColor(1, pixelColours.yellow);
+    ws2812b.setPixelColor(2, pixelColours.yellow);
+    ws2812b.setPixelColor(3, pixelColours.yellow);
+    ws2812b.show();
+    delay(5000);
+    // END OF TESTING //
+
+    int currentHour = getCurrentHour();
+    // 00:00 to 00:59, update bin - as we are checking every 'n' minutes this 
+    // should be fine for now - needs different logic though!!
+    if (currentHour == 0) {   
+        //check bin colours and update;
+        if (enableWiFi()) {
+            ntpTime();
+            updateBin();
+            illuminateBin();
+            disableWiFi();
+        }
+    } else if ( (currentHour == DIMMER) && (currentBrightness != DIM) ) {
+        // dim the brightness of the LEDs if required
+        setBrightness(DIM);
+        illuminateBin();
+    } else if ( (currentHour == BRIGHTER) && (currentBrightness != BRIGHTER) ) {
+        // increase the brightness of the LEDs if required
+        setBrightness(BRIGHT);
+        illuminateBin();
+    } else {        // TESTING ONLY - RESET BIN TO RIGHT COLOUR //
+        illuminateBin();
+    } // END OF TESTING
+
+    goToSleep();
+}
+
+/**
+ * @brief Put the chip to sleep
+ * 
+ */
+void goToSleep(void) {
+    long sleep_timer = sleep_duration * 60;
+
+    struct tm timeinfo;
+    getLocalTime(&timeinfo);
+
+    #if CLOG_ENABLE
+    CLOG(myLog1.add(), "Off to light-sleep for %ld minutes", sleep_timer/60);
+
+    Serial.println(F(""));
+    Serial.println(F("## This is myLog1 ##"));
+    for (uint16_t i = 0; i < myLog1.numEntries; i++) {
+        Serial.println(myLog1.get(i));
+    }
+    Serial.println(F("\n"));
+    delay(3000);  // serial output seems to be slow!
+    #endif
+
+    esp_sleep_enable_timer_wakeup(sleep_timer * 1000000LL);
+    esp_light_sleep_start();
+}
+
+/**
+ * @brief Enable WiFi
+ * 
+ * @return true if connected, else false
+ */
+bool enableWiFi(void) {
+    bool connected = true;
+    uint8_t wifi_connect_counter = 0;
+
+    WiFi.disconnect(false);
     WiFi.mode(WIFI_STA); // switch off AP
     WiFi.setAutoReconnect(true);
 
@@ -157,115 +267,41 @@ void setup() {
 
         // Give the wifi a few seconds to connect
         if (wifi_connect_counter > 30) {
-            wifi_connected = false;
+            connected = false;
             break;
         }
     }
-    
-    if (wifi_connected) {
-        // Turn off first error light
-        ws2812b.setPixelColor(0, unlitPixel);                
-        ws2812b.show();  // update to the WS2812B Led Strip
 
-        ipAddress = WiFi.localIP().toString();
-        CLOG(myLog1.add(), "IP Address: %s", ipAddress);
-
-        ntpTime();
-
-        // Turn off next eror light
-        ws2812b.setPixelColor(1, unlitPixel);                
-        ws2812b.show();  // update to the WS2812B Led Strip
-
-        CLOG(myLog1.add(), "WiFi, time and LED setup complete...");
-
-        updateBin();
-        
-        // Turn off wifi to save power
-        // WiFi.disconnect();
-        // WiFi.mode(WIFI_OFF);
-    } else {
-        CLOG(myLog1.add(), "Unable to connect to wifi!");
-        status = WIFI_ERROR;
-    }
-
-    // set brightness depending on time, default is bright at startup
-    int currentHour = getCurrentHour();
-    if ((currentHour >= DIMMER) && (currentHour < BRIGHTER)) {
-        setBrightness(DIM);
-    }
-
-    illuminateBin();
-
-    #if CLOG_ENABLE
-    Serial.println(F(""));
-    Serial.println(F("## CLOG output ##"));
-    for (uint16_t i = 0; i < myLog1.numEntries; i++) {
-        Serial.println(myLog1.get(i));
-    }
-    Serial.println(F("\n"));
-    #endif
-
-    // Set up hardware timer
-    //int one_second = 1000000;
-    long one_minute = 1000000 * 60;
-    long minutes = one_minute * 60;                 // 60=1hr - logic is written for 60 minute updates for now.
-    My_timer = timerBegin(0, 80, true);
-    timerAttachInterrupt(My_timer, &onTimerInterrupt, true);
-    timerAlarmWrite(My_timer, minutes, true);       // every 'n' minutes
-    timerAlarmEnable(My_timer);
+    return connected;
 }
 
 /**
- * @brief Main loop
+ * @brief Disable WiFi
  * 
  */
-void loop(void) {
-    // timer for next bin check
-    if (update) {
-        // reset update flag
-        portENTER_CRITICAL(&myMux);
-        update = false;
-        portEXIT_CRITICAL(&myMux);
-
-        // TESTING ONLY //
-        ws2812b.clear();
-        ws2812b.setPixelColor(0, yellowPixel);
-        ws2812b.setPixelColor(1, yellowPixel);
-        ws2812b.setPixelColor(2, yellowPixel);
-        ws2812b.setPixelColor(3, yellowPixel);
-        ws2812b.show();
-        delay(5000);
-        // END OF TESTING //
-
-        int currentHour = getCurrentHour();
-        // 00:00 to 00:59, update bin - as we are checking every hour this 
-        // should only be called once!
-        if (currentHour == 0) {   
-            //check bin colours and update;
-            ntpTime();
-            updateBin();
-            illuminateBin();
-        } else if ( (currentHour == DIMMER) && (currentBrightness != DIM) ) {
-            // dim the brightness of the LEDs if required
-            setBrightness(DIM);
-            illuminateBin();
-        } else if ( (currentHour == BRIGHTER) && (currentBrightness != BRIGHTER) ) {
-            // increase the brightness of the LEDs if required
-            setBrightness(BRIGHT);
-            illuminateBin();
-        } else {        // TESTING ONLY //
-            illuminateBin();
-        } // END OF TESTING
-
-        #if CLOG_ENABLE
-        for (uint16_t i = 0; i < myLog1.numEntries; i++) {
-            Serial.println(myLog1.get(i));
-        }
-        Serial.println("");
-        #endif
-    }
+void disableWiFi(void) {
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
 }
 
+/**
+ * @brief Log (cLog) why we've woken up.
+ * 
+ */
+void logWakeupReason(void) {
+    esp_sleep_wakeup_cause_t wakeup_reason;
+
+    wakeup_reason = esp_sleep_get_wakeup_cause();
+
+    switch (wakeup_reason) {
+    case ESP_SLEEP_WAKEUP_EXT0 : CLOG(myLog1.add(), "Wakeup caused by external signal using RTC_IO"); break;
+    case ESP_SLEEP_WAKEUP_EXT1 : CLOG(myLog1.add(), "Wakeup caused by external signal using RTC_CNTL"); break;
+    case ESP_SLEEP_WAKEUP_TIMER : CLOG(myLog1.add(), "Wakeup caused by timer"); break;
+    case ESP_SLEEP_WAKEUP_TOUCHPAD : CLOG(myLog1.add(), "Wakeup caused by touchpad"); break;
+    case ESP_SLEEP_WAKEUP_ULP : CLOG(myLog1.add(), "Wakeup caused by ULP program"); break;
+    default : CLOG(myLog1.add(), "Wakeup was not caused by light sleep: %d\n", wakeup_reason); break;
+    }
+}
 /**
  * @brief Get the bin type from node.js app or via file from website
  * and update the bin LEDs.
@@ -300,20 +336,6 @@ void ntpTime(void) {
     // Set timezone - London for us
     setenv("TZ", "GMT0BST,M3.5.0/1,M10.5.0", 1);
     tzset();
-}
-
-/**
- * @brief Set the bin types for testing.
- * 
- */
-void setBinTypes(void) {
-    if (RECYCLING_GARDEN_FOOD == bin_type) {
-        bin_type = RECYCLING_FOOD;
-    } else if (RECYCLING_FOOD == bin_type) {
-        bin_type = WASTE_FOOD;
-    } else {
-        bin_type = RECYCLING_GARDEN_FOOD;
-    }
 }
 
 /**
@@ -473,26 +495,26 @@ void illuminateBin(void) {
     switch (bin_type) {
         case RECYCLING_GARDEN_FOOD:
             // set colour
-            ws2812b.setPixelColor(0, greenPixel);
-            ws2812b.setPixelColor(1, greenPixel);
-            ws2812b.setPixelColor(2, bluePixel);
-            ws2812b.setPixelColor(3, bluePixel);
+            ws2812b.setPixelColor(0, pixelColours.green);
+            ws2812b.setPixelColor(1, pixelColours.green);
+            ws2812b.setPixelColor(2, pixelColours.blue);
+            ws2812b.setPixelColor(3, pixelColours.blue);
             CLOG(myLog1.add(), "  Bin Type: Recycling and Garden");
         break;
         case WASTE_FOOD:
             // set colour
-            ws2812b.setPixelColor(0, redPixel);
-            ws2812b.setPixelColor(1, redPixel);
-            ws2812b.setPixelColor(2, redPixel);
-            ws2812b.setPixelColor(3, redPixel);
+            ws2812b.setPixelColor(0, pixelColours.red);
+            ws2812b.setPixelColor(1, pixelColours.red);
+            ws2812b.setPixelColor(2, pixelColours.red);
+            ws2812b.setPixelColor(3, pixelColours.red);
             CLOG(myLog1.add(), "  Bin Type: Normal Waste");
         break;
         case RECYCLING_FOOD:
             // set colour
-            ws2812b.setPixelColor(0, bluePixel);
-            ws2812b.setPixelColor(1, bluePixel);
-            ws2812b.setPixelColor(2, bluePixel);
-            ws2812b.setPixelColor(3, bluePixel);
+            ws2812b.setPixelColor(0, pixelColours.blue);
+            ws2812b.setPixelColor(1, pixelColours.blue);
+            ws2812b.setPixelColor(2, pixelColours.blue);
+            ws2812b.setPixelColor(3, pixelColours.blue);
             CLOG(myLog1.add(), "  Bin Type: Recycling only");
         break;
         default:    // BIN_ERROR
@@ -500,26 +522,26 @@ void illuminateBin(void) {
             if (NODE_ERROR == status) {
                 ws2812b.setPixelColor(0, unlitPixel);
                 ws2812b.setPixelColor(1, unlitPixel);
-                ws2812b.setPixelColor(2, violetPixel);
-                ws2812b.setPixelColor(3, violetPixel);
+                ws2812b.setPixelColor(2, pixelColours.violet);
+                ws2812b.setPixelColor(3, pixelColours.violet);
                 CLOG(myLog1.add(), "  Status: NODE ERROR!");
             } else if (JSON_ERROR == status) {
                 ws2812b.setPixelColor(0, unlitPixel);
                 ws2812b.setPixelColor(1, unlitPixel);
                 ws2812b.setPixelColor(2, unlitPixel);
-                ws2812b.setPixelColor(3, violetPixel);
+                ws2812b.setPixelColor(3, pixelColours.violet);
                 CLOG(myLog1.add(), "  Status: JSON ERROR!");
             } else if (WIFI_ERROR == status) {
-                ws2812b.setPixelColor(0, violetPixel);
+                ws2812b.setPixelColor(0, pixelColours.violet);
                 ws2812b.setPixelColor(1, unlitPixel);
                 ws2812b.setPixelColor(2, unlitPixel);
                 ws2812b.setPixelColor(3, unlitPixel);
                 CLOG(myLog1.add(), "  Status: WIFI ERROR!");
             } else {    // status ok, a bin error!
-                ws2812b.setPixelColor(0, violetPixel);
-                ws2812b.setPixelColor(1, violetPixel);
-                ws2812b.setPixelColor(2, violetPixel);
-                ws2812b.setPixelColor(3, violetPixel);
+                ws2812b.setPixelColor(0, pixelColours.violet);
+                ws2812b.setPixelColor(1, pixelColours.violet);
+                ws2812b.setPixelColor(2, pixelColours.violet);
+                ws2812b.setPixelColor(3, pixelColours.violet);
                 CLOG(myLog1.add(), "  Status: BIN ERROR!");
             }
 
@@ -537,18 +559,22 @@ void illuminateBin(void) {
  * @return int Current Hour
  */
 int getCurrentHour(void) {
-    int retcode = -1;
+    int hour = -1;
 
     CLOG(myLog1.add(), "getCurrentHour()");
     struct tm timeinfo;
     if (!getLocalTime(&timeinfo)) {
         CLOG(myLog1.add(), "  Failed to obtain timeinfo");
     } else {
-        retcode = timeinfo.tm_hour;
-        CLOG(myLog1.add(), "  Current hour is: %d", retcode);
+        hour = timeinfo.tm_hour;
+        CLOG(myLog1.add(), "  Current hour is: %d", hour);
+
+        char timeStringBuff[35];
+        strftime(timeStringBuff, sizeof(timeStringBuff), "%H:%M:%S %a %b %d %Y", &timeinfo);
+        CLOG(myLog1.add(), "  strftime: %s", timeStringBuff);
     }
 
-    return retcode;
+    return hour;
 }
 
 /**
@@ -562,14 +588,14 @@ int getCurrentHour(void) {
  * @param unit8_t brightness to set the LED colours we're using.
  */
 void setBrightness(uint8_t brightness) {
-    CLOG(myLog1.add(), "setBrightness(%d), current brightness is: %d", brightness, currentBrightness);
+    CLOG(myLog1.add(), "setBrightness(%d), brightness was: %d", brightness, currentBrightness);
 
     if (brightness != currentBrightness) {
-        redPixel = ws2812b.Color(brightness*255/255, brightness*0/255, brightness*0/255);
-        greenPixel = ws2812b.Color(brightness*0/255, brightness*255/255, brightness*0/255);
-        bluePixel = ws2812b.Color(brightness*0/255, brightness*0/255, brightness*255/255);
-        violetPixel = ws2812b.Color(brightness*246/255, brightness*0/255, brightness*255/255);
-        yellowPixel = ws2812b.Color(brightness*255/255, brightness*255/255, brightness*0/255);
+        pixelColours.red = ws2812b.Color(brightness*255/255, brightness*0/255, brightness*0/255);
+        pixelColours.green = ws2812b.Color(brightness*0/255, brightness*255/255, brightness*0/255);
+        pixelColours.blue = ws2812b.Color(brightness*0/255, brightness*0/255, brightness*255/255);
+        pixelColours.violet = ws2812b.Color(brightness*246/255, brightness*0/255, brightness*255/255);
+        pixelColours.yellow = ws2812b.Color(brightness*255/255, brightness*255/255, brightness*0/255);
         currentBrightness = brightness;
     }
 }
