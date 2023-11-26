@@ -26,7 +26,7 @@
 #include "config.h"
 
 // CaptureLog setup
-#define CLOG_ENABLE fasle                        // this must be defined before cLog.h is included 
+#define CLOG_ENABLE false              // this must be defined before cLog.h is included 
 #include "cLog.h"
 
 #if CLOG_ENABLE
@@ -73,7 +73,7 @@ typedef struct {
     uint32_t yellow = ws2812b.Color(255, 255, 0);
 } colours_t;
 
-const long sleep_duration = 45; // number of minutes to go to sleep
+const long sleep_duration = 10; // number of minutes to go to sleep
 
 
 /* Function prototypes */
@@ -93,7 +93,7 @@ void setBrightness(uint8_t brightness);
 this_weeks_bins_t bin_type = BIN_ERROR;
 status_t status = NO_ERROR;
 uint8_t currentBrightness = 0;
-
+bool update = false;
 colours_t pixelColours;
 
 /**
@@ -122,7 +122,7 @@ void setup() {
     // errors as we set up and get bin types.  This happens when the program 
     // first launches only.
     for (int pixel = 0; pixel < NUM_PIXELS; pixel++) {          // for each pixel
-        ws2812b.setPixelColor(pixel, pixelColours.violet);              // it only takes effect when pixels.show() is called
+        ws2812b.setPixelColor(pixel, pixelColours.violet);      // it only takes effect when pixels.show() is called
     }
     ws2812b.show();  // update to the WS2812B Led Strip
 
@@ -162,6 +162,8 @@ void setup() {
     int currentHour = getCurrentHour();
     if ((currentHour >= DIMMER) || (currentHour < BRIGHTER)) {
         setBrightness(DIM);
+        // set update flag as it is now evening and we want to update just after midnight
+        update = true;
     } 
     
     illuminateBin();
@@ -196,18 +198,20 @@ void loop(void) {
     int currentHour = getCurrentHour();
     // 00:00 to 00:59, update bin - as we are checking every 'n' minutes this 
     // should be fine for now - needs different logic though!!
-    if (currentHour == 0) {   
+    if ((currentHour == 0) && (update == true)) {   
         //check bin colours and update;
         if (enableWiFi()) {
             ntpTime();
             updateBin();
             illuminateBin();
             disableWiFi();
+            update = false;     // will be reset in the evening
         }
     } else if ( (currentHour == DIMMER) && (currentBrightness != DIM) ) {
         // dim the brightness of the LEDs if required
         setBrightness(DIM);
         illuminateBin();
+        update = true;  // update at midnight
     } else if ( (currentHour == BRIGHTER) && (currentBrightness != BRIGHTER) ) {
         // increase the brightness of the LEDs if required
         setBrightness(BRIGHT);
@@ -345,7 +349,7 @@ void ntpTime(void) {
  * 
  * The server gets todays date and then loops through a .csv file to get the bins for this week.
  * 
- * @return THIS_WEEKS_BINS Bin types
+ * @return THIS_WEEKS_BINS Bin types or BIN_ERROR if something goes wrong
  */
 this_weeks_bins_t getBinColour(void)
 {
@@ -407,7 +411,7 @@ this_weeks_bins_t getBinColour(void)
  * This is a backup function in case the node.js server on the website failes or we move website host and 
  * can't run a node.js program on it.
  *  
- * @return THIS_WEEKS_BINS Bin types
+ * @return THIS_WEEKS_BINS Bin types or BIN_ERROR if something goes wrong
  */
 this_weeks_bins_t getBinColourFromFile(void) {
     this_weeks_bins_t retcode = BIN_ERROR;
