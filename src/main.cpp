@@ -80,7 +80,9 @@ const long sleep_duration = 10; // number of minutes to go to sleep
 void goToSleep(void);
 bool enableWiFi(void);
 void disableWiFi(void);
+#if CLOG_ENABLE
 void logWakeupReason(void);
+#endif
 void ntpTime(void);
 this_weeks_bins_t getBinColour(void);
 this_weeks_bins_t getBinColourFromFile(void);
@@ -186,13 +188,13 @@ void loop(void) {
     #endif
 
     // TESTING ONLY //
-    ws2812b.clear();
-    ws2812b.setPixelColor(0, pixelColours.yellow);
-    ws2812b.setPixelColor(1, pixelColours.yellow);
-    ws2812b.setPixelColor(2, pixelColours.yellow);
-    ws2812b.setPixelColor(3, pixelColours.yellow);
-    ws2812b.show();
-    delay(5000);
+    // ws2812b.clear();
+    // ws2812b.setPixelColor(0, pixelColours.yellow);
+    // ws2812b.setPixelColor(1, pixelColours.yellow);
+    // ws2812b.setPixelColor(2, pixelColours.yellow);
+    // ws2812b.setPixelColor(3, pixelColours.yellow);
+    // ws2812b.show();
+    // delay(5000);
     // END OF TESTING //
 
     int currentHour = getCurrentHour();
@@ -216,9 +218,10 @@ void loop(void) {
         // increase the brightness of the LEDs if required
         setBrightness(BRIGHT);
         illuminateBin();
-    } else {        // TESTING ONLY - RESET BIN TO RIGHT COLOUR //
-        illuminateBin();
-    } // END OF TESTING
+    } 
+    // else {        // TESTING ONLY - RESET BIN TO RIGHT COLOUR //
+    //     illuminateBin();
+    // } // END OF TESTING
 
     goToSleep();
 }
@@ -288,6 +291,7 @@ void disableWiFi(void) {
     WiFi.mode(WIFI_OFF);
 }
 
+#if CLOG_ENABLE
 /**
  * @brief Log (cLog) why we've woken up.
  * 
@@ -306,6 +310,8 @@ void logWakeupReason(void) {
     default : CLOG(myLog1.add(), "Wakeup was not caused by light sleep: %d\n", wakeup_reason); break;
     }
 }
+#endif
+
 /**
  * @brief Get the bin type from node.js app or via file from website
  * and update the bin LEDs.
