@@ -28,7 +28,7 @@ startDate = datetime.datetime(2024, 1, 6)     #year, month, day
 offset = 0
 
 # Range == number of weeks, remember; first weeks output will be rgf
-for w in range(20):
+for w in range(30):
     if w % 2 == 0:
         bins = "rgf" # Even
     else:
@@ -50,7 +50,7 @@ json_array = [{"date": day, "bins": b} for day, b in zip(binDate, binType)]
 
 # Now output the json array to a file, no error checking
 out_file = open("myfile.json", "w") 
-json.dump(json_array, out_file, indent = 4) 
+json.dump(json_array, out_file, indent = 2) 
 out_file.close() 
 
 print('Finished, json data saved in myfile.json')
