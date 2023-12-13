@@ -18,7 +18,9 @@ Libraries used: NeoPixel, ArduinoJson.
 
 The Bin will light up a specific colour which will correspond to the colour of the bin that needs taking out that week. E.g. Red for general waste, Green and Blue for garden waste and recycling, and just Blue for the week our local council only collects recycling.
 
-Deployed.
+I have also created a simple python script to create the .json file that this program requires.  It's specific to this program and requires manual input to set up.
+
+Now deployed at our house and my daughters, who requested this project as she kept forgetting which bin to put out each week!
 
 Before assembly
 ![alt text width="100"](/pictures/assembly.jpg)
