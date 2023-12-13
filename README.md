@@ -18,9 +18,18 @@ Libraries used: NeoPixel, ArduinoJson.
 
 The Bin will light up a specific colour which will correspond to the colour of the bin that needs taking out that week. E.g. Red for general waste, Green and Blue for garden waste and recycling, and just Blue for the week our local council only collects recycling.
 
-Currently in development.
+Deployed.
 
-Bin
+Before assembly
+![alt text width="500"](/pictures/assembly.jpg)
+
+Inside the bin!
+![alt text width="500"](/pictures/inside.jpg)
+
+Recycling week (Garden and Recycling waste)
+![alt text width="500"](/pictures/recyclingweek.jpg)
+
+Development - Non recylcing week
 ![alt text width="500"](/pictures/dev.jpg)
 
 ESP32-C3
