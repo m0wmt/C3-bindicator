@@ -1,292 +1,611 @@
+/***
+ * ESP32 bindicator using an ESP32-C3.  
+ * 
+ * Original concept/project written by: Darren Tarbard
+ * https://www.youtube.com/channel/UC44BUDSGzAjDnop3DvhAAog
+ * 
+ * Application was written using VSCode and platformio to manage the project. Upload
+ * from VSCode works without any button presses on the board for a change! 
+ *
+ * ESP32 Information:
+ * Internal Total Heap 299656
+ * Chip Model ESP32-C3, ChipRevision 4, Cpu Freq 160, SDK Version v4.4.2
+ * Flash Size 4194304, Flash Speed 80000000
+ * 
+ * v1: Initial version 
+ * v2: Ditch ISR timer for light sleep
+ * 
+ */
+
 #include <Arduino.h>
-#include <SPI.h>
-#include "CC1101_RFx.h"
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <Adafruit_NeoPixel.h>
 
-#define SS_PIN 5
-#define MISO_PIN 19
-#define GDO0_PIN 2
+#include "config.h"
 
-// SCK_PIN = 18; MISO_PIN = 19; MOSI_PIN = 23; SS_PIN = 5; GDO0 = 2;
-CC1101 radio(SS_PIN,  MISO_PIN);   // SS (CSN), MISO
+// CaptureLog setup
+#define CLOG_ENABLE false              // this must be defined before cLog.h is included 
+#include "cLog.h"
 
-// codes for the various requests and responses
-enum { 
-    SAVED_TODAY = 0xCA,
-    SAVED_YESTERDAY = 0xCB,
-    SAVED_LAST_7 = 0xCC,
-    SAVED_LAST_28 = 0xCD,
-    SAVED_TOTAL = 0xCE
-};
+#if CLOG_ENABLE
+const uint16_t maxEntries = 30;
+const uint16_t maxEntryChars = 120;
+CLOG_NEW myLog1(maxEntries, maxEntryChars, NO_TRIGGER, NO_WRAP);
+#endif
 
-long today, yesterday, last7, last28, total;
-  
-uint32_t pingTimer;         // used for the periodic pings see below
-uint32_t ledTimer;          // used for LED blinking when we receive a packet
-uint32_t rxTimer;  
-uint8_t txBuf[32];
-uint8_t request;
-bool boostRequest;
-uint8_t boostTime;
-uint8_t address[2];         // this is the address of the sender
-uint8_t addressLQI, rxLQI;  // signal strength test 
-bool addressValid;
-byte packet[255];
+/* Constants, defines and typedefs */
+#define PIN_WS2812B 0           // Output pin on ESP32-C3 that controls the LEDs
+#define NUM_PIXELS 4            // Number of LEDs (pixels) in the bin
 
-	
-void setup()  {
-    addressLQI = 255; // set received LQI to lowest value
-    addressValid = false;
+#define DIMMER 21               // hour to set LEDs dimmer
+#define BRIGHTER 7              // hour to set LEDs brighter
 
-    SPI.begin();
+#define DIM 35                  // dim value for illumination of the LEDs
+#define BRIGHT 250              // bright value for illumination of the LEDs
 
+typedef enum {
+    BIN_ERROR,
+    RECYCLING_GARDEN_FOOD,
+    RECYCLING_FOOD,
+    WASTE_FOOD
+} this_weeks_bins_t;
+
+typedef enum {
+    NO_ERROR,
+    WIFI_ERROR,
+    NODE_ERROR,
+    JSON_ERROR
+} status_t;
+
+// Set up library to control LEDs
+Adafruit_NeoPixel ws2812b(NUM_PIXELS, PIN_WS2812B, NEO_GRB + NEO_KHZ800);
+
+const uint32_t whitePixel = ws2812b.Color(255, 255, 255);
+const uint32_t unlitPixel = ws2812b.Color(0, 0, 0);
+
+typedef struct {
+    uint32_t red = ws2812b.Color(255, 0, 0);
+    uint32_t green = ws2812b.Color(0, 255, 0);
+    uint32_t blue = ws2812b.Color(0, 0, 255);
+    uint32_t violet = ws2812b.Color(246, 0, 255);
+    uint32_t yellow = ws2812b.Color(255, 255, 0);
+} colours_t;
+
+const long sleep_duration = 10; // number of minutes to go to sleep
+
+
+/* Function prototypes */
+void goToSleep(void);
+bool enableWiFi(void);
+void disableWiFi(void);
+#if CLOG_ENABLE
+void logWakeupReason(void);
+#endif
+void ntpTime(void);
+this_weeks_bins_t getBinColour(void);
+this_weeks_bins_t getBinColourFromFile(void);
+void illuminateBin(void);
+void updateBin(void);
+int getCurrentHour(void);
+void setBrightness(uint8_t brightness);
+
+/* Globals etc. */
+this_weeks_bins_t bin_type = BIN_ERROR;
+status_t status = NO_ERROR;
+uint8_t currentBrightness = 0;
+bool update = false;
+colours_t pixelColours;
+
+/**
+ * @brief Set up the application, wifi, time and LEDs
+ * 
+ */
+void setup() {
+    //bool wifi_connected = false;
+
+    #if CLOG_ENABLE
     Serial.begin(115200);
-    Serial.println();
-    Serial.println("SPI OK");
+    delay(5000); // delay for serial to begin, ESP32 can be slow to start serial output!	
+
+	logWakeupReason();
+    #endif
+ 
+    // Show 4 lights which will go out as everything starts up correctly.
     
-    radio.reset();
-    radio.begin(868.350e6); // Freq, do not forget the "e6"
-    radio.setMaxPktSize(61);
-    radio.writeRegister(CC1101_FREQ2, 0x21); 
-    radio.writeRegister(CC1101_FREQ1, 0x65);
-    radio.writeRegister(CC1101_FREQ0, 0xe8);
-    radio.writeRegister(CC1101_FSCTRL1, 0x08); // fif=203.125kHz
-    radio.writeRegister(CC1101_FSCTRL0, 0x00); // No offset
-    radio.writeRegister(CC1101_MDMCFG4, 0x5B); // CHANBW_E = 1 CHANBW_M=1 BWchannel =325kHz   DRATE_E=11
-    radio.writeRegister(CC1101_MDMCFG3, 0xF8); // DRATE_M=248 RDATA=99.975kBaud
-    radio.writeRegister(CC1101_MDMCFG2, 0x03); // Disable digital DC blocking filter before demodulator enabled. MOD_FORMAT=000 (2-FSK) Manchester Coding disabled Combined sync-word qualifier mode = 30/32 sync word bits detected
-    radio.writeRegister(CC1101_MDMCFG1, 0x22); // Forward error correction disabled 4 preamble bytes transmitted CHANSPC_E=2
-    radio.writeRegister(CC1101_MDMCFG0, 0xF8); // CHANSPC_M=248 200kHz channel spacing
-    radio.writeRegister(CC1101_CHANNR, 0x00); // The 8-bit unsigned channel number, which is multiplied by the channel spacing setting and added to the base frequency.
-    radio.writeRegister(CC1101_DEVIATN, 0x47); // DEVIATION_E=4 DEVIATION_M=7 ±47.607 kHz deviation
-    radio.writeRegister(CC1101_FREND1, 0xB6); // Adjusts RX RF device
-    radio.writeRegister(CC1101_FREND0, 0x10); // Adjusts TX RF device
-    radio.writeRegister(CC1101_MCSM0, 0x18); // Calibrates whngoing from IDLE to RX or TX (or FSTXON) PO_TIMEOUT 149-155uS Pin control disabled XOSC off in sleep mode
-    //radio.writeRegister(CC1101_MCSM1, 0x00); // Channel clear = always Return to idle after packet reception Return to idle after transmission
-    radio.writeRegister(CC1101_FOCCFG, 0x1D); // The frequency compensation loop gain to be used before a sync word is detected = 4K The frequency compensation loop gain to be used after a sync word is Detected = K/2 The saturation point for the frequency offset compensation algorithm = ±BWchannel /8
-    radio.writeRegister(CC1101_BSCFG, 0x1C); // The clock recovery feedback loop integral gain to be used before a sync word is detected = KI The clock recovery feedback loop proportional gain to be used before a sync word is detected = 2KP The clock recovery feedback loop integral gain to be used after a sync word is Detected = KI/2 The clock recovery feedback loop proportional gain to be used after a sync word is detected = KP The saturation point for the data rate offset compensation algorithm = ±0 (No data rate offset compensation performed)
-    radio.writeRegister(CC1101_AGCCTRL2, 0xC7); // The 3 highest DVGA gain settings can not be used. Maximum allowable LNA + LNA 2 gain relative to the maximum possible gain. Target value for the averaged amplitude from the digital channel filter = 42dB
-    radio.writeRegister(CC1101_AGCCTRL1, 0x00); // LNA 2 gain is decreased to minimum before decreasing LNA gain Relative carrier sense threshold disabled Sets the absolute RSSI threshold for asserting carrier sense to MAGN_TARGET
-    radio.writeRegister(CC1101_AGCCTRL0, 0xB2); // Sets the level of hysteresis on the magnitude deviation (internal AGC signal that determine gain changes) to Medium hysteresis, medium asymmetric dead zone, medium gain Sets the number of channel filter samples from a gain adjustment has been made until the AGC algorithm starts accumulating new samples to 32 samples AGC gain never frozen
-    radio.writeRegister(CC1101_FSCAL3, 0xEA); // Detailed calibration
-    radio.writeRegister(CC1101_FSCAL2, 0x2A); //
-    radio.writeRegister(CC1101_FSCAL1, 0x00); //
-    radio.writeRegister(CC1101_FSCAL0, 0x1F); //
-    radio.writeRegister(CC1101_FSTEST, 0x59); // Test register
-    radio.writeRegister(CC1101_TEST2, 0x81); // Values to be used from SmartRF software
-    radio.writeRegister(CC1101_TEST1, 0x35); //
-    radio.writeRegister(CC1101_TEST0, 0x09); //
-    radio.writeRegister(CC1101_IOCFG2, 0x0B); // Active High Serial Clock
-    radio.writeRegister(CC1101_IOCFG0, 0x46); // Analog temperature sensor disabled Active High Asserts when sync word has been sent / received, and de-asserts at the end of the packet
-    radio.writeRegister(CC1101_PKTCTRL1, 0x04); // Sync word is always accepted Automatic flush of RX FIFO when CRC is not OK disabled Two status bytes will be appended to the payload of the packet. The status bytes contain RSSI and LQI values, as well as CRC OK. No address checkof received packages.
-    radio.writeRegister(CC1101_PKTCTRL0, 0x05); // Data whitening off Normal mode, use FIFOs for RX and TX CRC calculation in TX and CRC check in RX enabled Variable packet length mode. Packet length configured by the first byte after sync word
-    radio.writeRegister(CC1101_ADDR, 0x00); // Address used for packet filtration. Optional broadcast addresses are 0 (0x00) and 255 (0xFF).
+    // Set brightness using our own routine, very bright so any errors are visible!
+    setBrightness(BRIGHT);
+    ws2812b.begin();                // Initialise WS2812B strip object (REQUIRED)
+    ws2812b.show();                 // Initialise all pixels to off
 
-    static uint8_t paTable[] = {0xC6, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F};
-    radio.writeBurstRegister(CC1101_PATABLE, paTable, sizeof(paTable));
+    ws2812b.clear();
+    // turn on all pixels, these will be extinguished if there are no 
+    // errors as we set up and get bin types.  This happens when the program 
+    // first launches only.
+    for (int pixel = 0; pixel < NUM_PIXELS; pixel++) {          // for each pixel
+        ws2812b.setPixelColor(pixel, pixelColours.violet);      // it only takes effect when pixels.show() is called
+    }
+    ws2812b.show();  // update to the WS2812B Led Strip
 
-    radio.strobe(CC1101_SIDLE); 
-    radio.strobe(CC1101_SPWD); 
-
-    Serial.println("Radio OK");
-    radio.setRXstate();             // Set the current state to RX : listening for RF packets
+    #if CLOG_ENABLE
+    Serial.println(F("\n##################################"));
+    Serial.println(F("ESP32 Information:"));
+    Serial.printf("Internal Total Heap %d, Internal Used Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getHeapSize()-ESP.getFreeHeap(), ESP.getFreeHeap());
+    Serial.printf("Sketch Size %d, Free Sketch Space %d\n", ESP.getSketchSize(), ESP.getFreeSketchSpace());
+    Serial.printf("SPIRam Total heap %d, SPIRam Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
+    Serial.printf("Chip Model %s, ChipRevision %d, Cpu Freq %d, SDK Version %s\n", ESP.getChipModel(), ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getSdkVersion());
+    Serial.printf("Flash Size %d, Flash Speed %d\n", ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
+    Serial.println(F("##################################\n\n"));
+    #endif
     
-    // LED setup - so we can use the module without serial terminal
-    pinMode(LED_BUILTIN, OUTPUT);
+    if (enableWiFi() == true) {
+        // Turn off first error light
+        ws2812b.setPixelColor(0, unlitPixel);                
+        ws2812b.show();  // update to the WS2812B Led Strip
 
-    Serial.println("Setup Finished");
-  }
+        CLOG(myLog1.add(), "IP Address: %s", WiFi.localIP().toString());
 
+        ntpTime();
 
-void loop(void) {
-    // Turn on the LED for 200ms without blocking the loop.
-    digitalWrite(LED_BUILTIN, millis() - ledTimer > 200);
+        // Turn off next eror light
+        ws2812b.setPixelColor(1, unlitPixel);                
+        ws2812b.show();  // update to the WS2812B Led Strip
 
-    // Receive part. if GDO0 is connected with D1 you can use it to detect incoming packets
-    //if (digitalRead(D1)) {
-    byte pkt_size = radio.getPacket(packet);
-    if (pkt_size > 0 && radio.crcok()) { // We have a valid packet with some data
-        short heating;
-        long p1, p2;
-        char pbuf[32];
-        byte boostTime;
-        bool waterHeating,cylinderHot;
+        CLOG(myLog1.add(), "WiFi, time and LED setup complete...");
 
-        Serial.print("Frame: ");
-        rxTimer = millis();
-        rxLQI = radio.getLQI();
-        for (int i = 0; i < pkt_size; i++) {
-            sprintf(pbuf, "%02x", packet[i]);
-            Serial.print(pbuf); //packet[i], HEX);
-            Serial.print(",");
-        }
-
-        Serial.print("len=");
-        Serial.print(pkt_size);
-        Serial.print(" RSSI="); // for field tests to check the signal strength
-        Serial.print(radio.getRSSIdbm());
-        Serial.print(" LQI="); // for field tests to check the signal quality
-        Serial.println(rxLQI);
-
-        //   buddy request                            sender packet
-        if ((packet[2] == 0x21 && pkt_size == 29) || (packet[2] == 0x01 && pkt_size == 44)) {
-            if(rxLQI < addressLQI) { // is the signal stronger than the previous/none
-                addressLQI = rxLQI;
-                address[0] = packet[0]; // save the address of the packet	0x1c7b; //
-                address[1] = packet[1];
-                addressValid = true;
-                Serial.print("Updated the address to:");
-                sprintf(pbuf, "%02x,%02x",address[0],address[1]);
-                Serial.println(pbuf);
-            }		
-        }
-
-        // main unit (sending info to iBoost Buddy)
-        if (packet[2] == 0x22) {    
-            heating = (* ( short *) &packet[16]);
-            p1 = (* ( long*) &packet[18]);
-            p2 = (* ( long*) &packet[25]); // this depends on the request
-
-            if (packet[6])
-                waterHeating = false;
-            else
-                waterHeating = true;
-
-            if (packet[7])
-                cylinderHot = true;
-            else
-                cylinderHot = false;
-
-            boostTime=packet[5]; // boost time remaining (minutes)
-            Serial.print("Heating=");
-            Serial.print(heating );
-            Serial.print(",P1=");
-            Serial.print(p1 );
-            Serial.print(",Import=");
-            Serial.print(p1 / 390 );        // was 360
-            Serial.print(",P2=");
-            Serial.print(p2 );
-            Serial.print(",P3=");
-            Serial.print((* (signed long*) &packet[29]) );
-            Serial.print(",P4=");
-            Serial.println((* (signed long*) &packet[30]) );
-            
-            // convert p2 to kWh
-            // if (p2 > 0)
-            //     p2 = p2/1000;
-
-            switch (packet[24]) {
-                case   SAVED_TODAY:
-                    today = p2;
-                    break;
-                case   SAVED_YESTERDAY:
-                    yesterday = p2;
-                    break;
-                case   SAVED_LAST_7:
-                    last7 = p2;
-                    break;
-                case   SAVED_LAST_28:
-                    last28 = p2;
-                    break;
-                case   SAVED_TOTAL:
-                    total = p2;
-                    break;
-            }
-
-            if (cylinderHot)
-                Serial.println("Water Tank HOT");
-            else if (boostTime > 0)
-                Serial.println("Manual Boost ON");
-            else if (waterHeating) {
-                Serial.print("Heating by Solar=");
-                Serial.println(heating);
-            }
-            else
-                Serial.println("Water Heating OFF");
-
-            if (packet[12] == 0x01)
-                Serial.println("Warning: Sender Battery LOW");
-            else
-                Serial.println("Sender Battery OK");
-
-            Serial.print("Today:");
-            Serial.print(today);
-            Serial.print(" Wh   Yesterday:");
-            Serial.print(yesterday);
-            Serial.print(" Wh   Last 7 Days:");
-            Serial.print(last7);
-            Serial.print(" Wh   Last 28 Days:");
-            Serial.print(last28);
-            Serial.print(" Wh   Total:");
-            Serial.print(total);
-            Serial.print(" Wh   Boost Time:");
-            Serial.println(boostTime);
-        }
-        // Update LED timer
-        ledTimer = millis();
+        updateBin();
+    } else {
+        CLOG(myLog1.add(), "Unable to connect to WiFi!");
+        status = WIFI_ERROR;
     }
 
-    if(addressValid) {
-        if ((millis() - pingTimer > 10000) || boostRequest) { // ping every 10sec
-            if ( (millis() - rxTimer) > 1000 &&  (millis() - rxTimer) < 2000) {
-                memset(txBuf, 0, sizeof(txBuf));
+    // set brightness depending on time, default is bright at startup
+    int currentHour = getCurrentHour();
+    if ((currentHour >= DIMMER) || (currentHour < BRIGHTER)) {
+        setBrightness(DIM);
+        // set update flag as it is now evening and we want to update just after midnight
+        update = true;
+    } 
+    
+    illuminateBin();
 
-                if ((request < 0xca) || (request > 0xce)) 
-                    request = 0xca;
+    disableWiFi();
 
-                txBuf[0] = address[0]; //payload
-                txBuf[1] = address[1];		  
-                txBuf[2] = 0x21;
-                txBuf[3] = 0x8;
-                txBuf[4] = 0x92;
-                txBuf[5] = 0x7;
-                txBuf[8] = 0x24;
-                txBuf[10] = 0xa0;
-                txBuf[11] = 0xa0;
-                txBuf[12] = request; // request information (on this topic) from the main unit
-                txBuf[14] = 0xa0;
-                txBuf[15] = 0xa0;
-                txBuf[16] = 0xc8;
-                
-            //   if(boostRequest){
-            //     txBuf[4] = 0x18; // set boost time
-            //     txBuf[18] = boostTime;
-            //     boostRequest = false;
-            //   }
+    goToSleep();
+}
 
-                radio.strobe(CC1101_SIDLE);
-                radio.writeRegister(CC1101_TXFIFO, 0x1d);             // packet length
-                radio.writeBurstRegister(CC1101_TXFIFO, txBuf, 29);   // write the data to the TX FIFO
-                radio.strobe(CC1101_STX);
-                delay(5);
-                radio.strobe(CC1101_SWOR);
-                delay(5);
-                radio.strobe(CC1101_SFRX);
-                radio.strobe(CC1101_SIDLE);
-                radio.strobe(CC1101_SRX);
-                Serial.print("Sent request: ");
-                switch (request) {
-                    case   SAVED_TODAY:
-                        Serial.println("Saved Today");
-                        break;
-                    case   SAVED_YESTERDAY:
-                        Serial.println("Saved Yesterday");
-                        break;
-                    case   SAVED_LAST_7:
-                        Serial.println("Saved Last 7 Days");
-                        break;
-                    case   SAVED_LAST_28:
-                        Serial.println("Saved Last 28 Days");
-                        break;
-                    case   SAVED_TOTAL:
-                        Serial.println("Saved In Total");
-                        break;
-                }
+/**
+ * @brief Main loop
+ * 
+ */
+void loop(void) {
+    #if CLOG_ENABLE
+    Serial.begin(115200);
+    delay(5000); // delay for serial to begin, ESP32 can be slow to start serial output!	
 
-                request++;
+	logWakeupReason();
+    #endif
 
-                // Update timer for pinging main unit for information
-                pingTimer = millis();
-            }
+    // TESTING ONLY //
+    // ws2812b.clear();
+    // ws2812b.setPixelColor(0, pixelColours.yellow);
+    // ws2812b.setPixelColor(1, pixelColours.yellow);
+    // ws2812b.setPixelColor(2, pixelColours.yellow);
+    // ws2812b.setPixelColor(3, pixelColours.yellow);
+    // ws2812b.show();
+    // delay(5000);
+    // END OF TESTING //
+
+    int currentHour = getCurrentHour();
+    // 00:00 to 00:59, update bin - as we are checking every 'n' minutes this 
+    // should be fine for now - needs different logic though!!
+    if ((currentHour == 0) && (update == true)) {   
+        //check bin colours and update;
+        if (enableWiFi()) {
+            ntpTime();
+            updateBin();
+            illuminateBin();
+            disableWiFi();
+            update = false;     // will be reset in the evening
         }
+    } else if ( (currentHour == DIMMER) && (currentBrightness != DIM) ) {
+        // dim the brightness of the LEDs if required
+        setBrightness(DIM);
+        illuminateBin();
+        update = true;  // update at midnight
+    } else if ( (currentHour == BRIGHTER) && (currentBrightness != BRIGHTER) ) {
+        // increase the brightness of the LEDs if required
+        setBrightness(BRIGHT);
+        illuminateBin();
+    } 
+    // else {        // TESTING ONLY - RESET BIN TO RIGHT COLOUR //
+    //     illuminateBin();
+    // } // END OF TESTING
+
+    goToSleep();
+}
+
+/**
+ * @brief Put the chip to sleep
+ * 
+ */
+void goToSleep(void) {
+    long sleep_timer = sleep_duration * 60;
+
+    struct tm timeinfo;
+    getLocalTime(&timeinfo);
+
+    #if CLOG_ENABLE
+    CLOG(myLog1.add(), "Off to light-sleep for %ld minutes", sleep_timer/60);
+
+    Serial.println(F(""));
+    Serial.println(F("## This is myLog1 ##"));
+    for (uint16_t i = 0; i < myLog1.numEntries; i++) {
+        Serial.println(myLog1.get(i));
+    }
+    Serial.println(F("\n"));
+    delay(3000);  // serial output seems to be slow!
+    #endif
+
+    esp_sleep_enable_timer_wakeup(sleep_timer * 1000000LL);
+    esp_light_sleep_start();
+}
+
+/**
+ * @brief Enable WiFi
+ * 
+ * @return true if connected, else false
+ */
+bool enableWiFi(void) {
+    bool connected = true;
+    uint8_t wifi_connect_counter = 0;
+
+    WiFi.disconnect(false);
+    WiFi.mode(WIFI_STA); // switch off AP
+    WiFi.setAutoReconnect(true);
+
+    WiFi.begin(SSID, WIFI_PASSWORD);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(500);
+
+        wifi_connect_counter++;
+
+        // Give the wifi a few seconds to connect
+        if (wifi_connect_counter > 30) {
+            connected = false;
+            break;
+        }
+    }
+
+    return connected;
+}
+
+/**
+ * @brief Disable WiFi
+ * 
+ */
+void disableWiFi(void) {
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+}
+
+#if CLOG_ENABLE
+/**
+ * @brief Log (cLog) why we've woken up.
+ * 
+ */
+void logWakeupReason(void) {
+    esp_sleep_wakeup_cause_t wakeup_reason;
+
+    wakeup_reason = esp_sleep_get_wakeup_cause();
+
+    switch (wakeup_reason) {
+    case ESP_SLEEP_WAKEUP_EXT0 : CLOG(myLog1.add(), "Wakeup caused by external signal using RTC_IO"); break;
+    case ESP_SLEEP_WAKEUP_EXT1 : CLOG(myLog1.add(), "Wakeup caused by external signal using RTC_CNTL"); break;
+    case ESP_SLEEP_WAKEUP_TIMER : CLOG(myLog1.add(), "Wakeup caused by timer"); break;
+    case ESP_SLEEP_WAKEUP_TOUCHPAD : CLOG(myLog1.add(), "Wakeup caused by touchpad"); break;
+    case ESP_SLEEP_WAKEUP_ULP : CLOG(myLog1.add(), "Wakeup caused by ULP program"); break;
+    default : CLOG(myLog1.add(), "Wakeup was not caused by light sleep: %d\n", wakeup_reason); break;
+    }
+}
+#endif
+
+/**
+ * @brief Get the bin type from node.js app or via file from website
+ * and update the bin LEDs.
+ * 
+ */
+void updateBin(void) {
+    CLOG(myLog1.add(), "updateBin()");
+
+    bin_type = BIN_ERROR;   // reset bin error flag
+    if (WiFi.status() == WL_CONNECTED) {
+        bin_type = getBinColour();
+        if (BIN_ERROR == bin_type) {
+            status = NODE_ERROR;
+            bin_type = getBinColourFromFile();
+
+            if (BIN_ERROR == bin_type) {
+                status = JSON_ERROR;
+            } 
+        }
+    } else {
+        status = WIFI_ERROR;
+    }
+}
+
+/**
+ * @brief Connect to NTP time server for accurate time.
+ * 
+ */
+void ntpTime(void) {
+    configTime(0, 0, SNTP_TIME_SERVER);
+
+    // Set timezone - London for us
+    setenv("TZ", "GMT0BST,M3.5.0/1,M10.5.0", 1);
+    tzset();
+}
+
+/**
+ * @brief Get the colour of the bin for current time/day.  This will be achieved by accessing a node.js 
+ * server on the website where all the heavy lifting will be carried out. It will return a JSON object 
+ * containing the bin types.
+ * 
+ * The server gets todays date and then loops through a .csv file to get the bins for this week.
+ * 
+ * @return THIS_WEEKS_BINS Bin types or BIN_ERROR if something goes wrong
+ */
+this_weeks_bins_t getBinColour(void)
+{
+    this_weeks_bins_t retcode = BIN_ERROR;
+
+    CLOG(myLog1.add(), "getBinColour()");
+
+    // Connect to the server and get current bin information
+    HTTPClient http;
+    
+    if (! http.begin(BINDICATOR_URL)) {
+        CLOG(myLog1.add(), "  Connection failed to: %s", BINDICATOR_URL);
+
+        // If we cant connect, show 1 pixel red to indicate an error
+        //pixels.setPixelColor(0, redPixel);
+    } else {
+        CLOG(myLog1.add(), "  Connection succesful to: %s", BINDICATOR_URL);
+
+        // If we can connect get bin type
+        int httpCode = http.GET();
+        
+        // Check we're getting a HTTP Code 200
+        if (HTTP_CODE_OK == httpCode) {
+            String payload = http.getString();
+            CLOG(myLog1.add(), "  HTTP.get() HTTP_CODE_OK");
+            
+            // Parse JSON object
+            DynamicJsonDocument doc(256);
+            DeserializationError err = deserializeJson(doc, payload);
+            if (err) {
+                CLOG(myLog1.add(), "  DeserializeJson failed: %s", err.c_str());
+            } else {
+                String bins = doc["collection"].as<String>();
+
+                CLOG(myLog1.add(), "  Bin type: %s", bins);
+                if (bins == "rgf") {
+                    retcode = RECYCLING_GARDEN_FOOD;
+                } else if (bins == "rf") {
+                    retcode = RECYCLING_FOOD;
+                } else if (bins == "wf") {
+                    retcode = WASTE_FOOD;
+                } else {
+                    retcode = BIN_ERROR;
+                }
+            }
+        } else {
+            CLOG(myLog1.add(), "  Unable to get bin type!");
+        }
+    }
+
+    return retcode;
+}
+
+/**
+ * @brief Get the colour of the bin for current time/day.  This is an alternative function to above which 
+ * will download a .json file containing dates and their associated bin types.  We then loop through the 
+ * JSON to find todays date and then extract the bin types for that day/week.
+ * 
+ * This is a backup function in case the node.js server on the website failes or we move website host and 
+ * can't run a node.js program on it.
+ *  
+ * @return THIS_WEEKS_BINS Bin types or BIN_ERROR if something goes wrong
+ */
+this_weeks_bins_t getBinColourFromFile(void) {
+    this_weeks_bins_t retcode = BIN_ERROR;
+
+    CLOG(myLog1.add(), "getBinColourFromFile()");
+   
+    // Connect to the server and get current bin information
+    HTTPClient http;
+    
+    if (! http.begin(BINDICATOR_FILE_URL)) {
+        CLOG(myLog1.add(), "  Connection failed to: %s", BINDICATOR_FILE_URL);
+    } else {
+        CLOG(myLog1.add(), "  Connection successful to: %s", BINDICATOR_FILE_URL);
+
+        // If we can connect get bin type
+        int httpCode = http.GET();
+        
+        // Check we're getting a HTTP Code 200
+        if (HTTP_CODE_OK == httpCode) {
+            String payload = http.getString();
+            CLOG(myLog1.add(), "  HTTP.get() HTTP_CODE_OK");
+
+            //Serial.println("HTTP.get()...");
+            //Serial.println("  " + payload);
+
+            // Parse JSON object
+            DynamicJsonDocument doc(25 * 1024);
+            DeserializationError err = deserializeJson(doc, payload);
+            String bin_type = "error";
+            if (err) {
+                CLOG(myLog1.add(), "  DeserializeJson failed: %s", err.c_str());
+            } else {
+                struct tm timeinfo;
+                if (!getLocalTime(&timeinfo)) {
+                    CLOG(myLog1.add(), "  Failed to obtain time");
+                } else {
+                    char todaysDate[11]; 
+                    strftime(todaysDate, sizeof(todaysDate), "%Y-%m-%d", &timeinfo); // yyyy-mm-dd
+                    String bin_type = "";
+
+                    int i = 0;
+                    // loop through the deserialized data and find the bins for todays date
+                    for (JsonObject item : doc.as<JsonArray>()) {
+                        //const char* date = item["date"]; // "2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04", ...
+                        //const char* bins = item["bins"]; // "wf", "wf", "wf", "wf", "wf", "wf", "rgf", "rgf", "rgf", "rgf", ...
+                        
+                        if (strcmp(item["date"], todaysDate) == 0) {
+                            bin_type = item["bins"].as<String>();
+                            // we have the bins, exit for loop
+                            break;
+                        }
+                    }
+
+                    // now set return code for the type of bins found
+                    if (bin_type == "rgf") {
+                        retcode = RECYCLING_GARDEN_FOOD;
+                    } else if (bin_type =="rf") {
+                        retcode = RECYCLING_FOOD;
+                    } else if (bin_type == "wf") {
+                        retcode = WASTE_FOOD;
+                    } else {
+                        retcode = BIN_ERROR;
+                    }
+
+                    CLOG(myLog1.add(), "  Bin types for %s are: %s", todaysDate, bin_type);
+                }
+            }
+        } else {
+            CLOG(myLog1.add(), "  Unable to get bin type!");
+        }
+    }
+
+    return retcode;
+}
+
+/**
+ * @brief Light up the LEDs in the bin :-)
+ * 
+ */
+void illuminateBin(void) {
+    CLOG(myLog1.add(), "illuminateBin()");
+    ws2812b.clear();
+
+    // Get bin types and show appropriate colours
+    switch (bin_type) {
+        case RECYCLING_GARDEN_FOOD:
+            // set colour
+            ws2812b.setPixelColor(0, pixelColours.green);
+            ws2812b.setPixelColor(1, pixelColours.green);
+            ws2812b.setPixelColor(2, pixelColours.blue);
+            ws2812b.setPixelColor(3, pixelColours.blue);
+            CLOG(myLog1.add(), "  Bin Type: Recycling and Garden");
+        break;
+        case WASTE_FOOD:
+            // set colour
+            ws2812b.setPixelColor(0, pixelColours.red);
+            ws2812b.setPixelColor(1, pixelColours.red);
+            ws2812b.setPixelColor(2, pixelColours.red);
+            ws2812b.setPixelColor(3, pixelColours.red);
+            CLOG(myLog1.add(), "  Bin Type: Normal Waste");
+        break;
+        case RECYCLING_FOOD:
+            // set colour
+            ws2812b.setPixelColor(0, pixelColours.blue);
+            ws2812b.setPixelColor(1, pixelColours.blue);
+            ws2812b.setPixelColor(2, pixelColours.blue);
+            ws2812b.setPixelColor(3, pixelColours.blue);
+            CLOG(myLog1.add(), "  Bin Type: Recycling only");
+        break;
+        default:    // BIN_ERROR
+            // set error colour
+            if (NODE_ERROR == status) {
+                ws2812b.setPixelColor(0, unlitPixel);
+                ws2812b.setPixelColor(1, unlitPixel);
+                ws2812b.setPixelColor(2, pixelColours.violet);
+                ws2812b.setPixelColor(3, pixelColours.violet);
+                CLOG(myLog1.add(), "  Status: NODE ERROR!");
+            } else if (JSON_ERROR == status) {
+                ws2812b.setPixelColor(0, unlitPixel);
+                ws2812b.setPixelColor(1, unlitPixel);
+                ws2812b.setPixelColor(2, unlitPixel);
+                ws2812b.setPixelColor(3, pixelColours.violet);
+                CLOG(myLog1.add(), "  Status: JSON ERROR!");
+            } else if (WIFI_ERROR == status) {
+                ws2812b.setPixelColor(0, pixelColours.violet);
+                ws2812b.setPixelColor(1, unlitPixel);
+                ws2812b.setPixelColor(2, unlitPixel);
+                ws2812b.setPixelColor(3, unlitPixel);
+                CLOG(myLog1.add(), "  Status: WIFI ERROR!");
+            } else {    // status ok, a bin error!
+                ws2812b.setPixelColor(0, pixelColours.violet);
+                ws2812b.setPixelColor(1, pixelColours.violet);
+                ws2812b.setPixelColor(2, pixelColours.violet);
+                ws2812b.setPixelColor(3, pixelColours.violet);
+                CLOG(myLog1.add(), "  Status: BIN ERROR!");
+            }
+
+            // Reset status for next checkup
+            status = NO_ERROR;
+        break;
+    }
+
+    ws2812b.show();  // update to the WS2812B Led Strip   
+}
+
+/**
+ * @brief Get the current hour.
+ * 
+ * @return int Current Hour
+ */
+int getCurrentHour(void) {
+    int hour = -1;
+
+    CLOG(myLog1.add(), "getCurrentHour()");
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo)) {
+        CLOG(myLog1.add(), "  Failed to obtain timeinfo");
+    } else {
+        hour = timeinfo.tm_hour;
+        CLOG(myLog1.add(), "  Current hour is: %d", hour);
+
+        char timeStringBuff[35];
+        strftime(timeStringBuff, sizeof(timeStringBuff), "%H:%M:%S %a %b %d %Y", &timeinfo);
+        CLOG(myLog1.add(), "  strftime: %s", timeStringBuff);
+    }
+
+    return hour;
+}
+
+/**
+ * @brief Set the Brightness of all the defined pixel colours. Can not 
+ * use the neopixel library for this, 'setBrightness() function as 
+ * currently implemented operates directly on the pixel array and is 'lossy'. 
+ * Since the original brightness value is not retained, once dimmed, you can 
+ * never return to the exact original brightness value. The more you dim, the 
+ * more information you lose'.
+ * 
+ * @param unit8_t brightness to set the LED colours we're using.
+ */
+void setBrightness(uint8_t brightness) {
+    CLOG(myLog1.add(), "setBrightness(%d), brightness was: %d", brightness, currentBrightness);
+
+    if (brightness != currentBrightness) {
+        pixelColours.red = ws2812b.Color(brightness*255/255, brightness*0/255, brightness*0/255);
+        pixelColours.green = ws2812b.Color(brightness*0/255, brightness*255/255, brightness*0/255);
+        pixelColours.blue = ws2812b.Color(brightness*0/255, brightness*0/255, brightness*255/255);
+        pixelColours.violet = ws2812b.Color(brightness*246/255, brightness*0/255, brightness*255/255);
+        pixelColours.yellow = ws2812b.Color(brightness*255/255, brightness*255/255, brightness*0/255);
+        currentBrightness = brightness;
     }
 }
