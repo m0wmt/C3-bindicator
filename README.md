@@ -1,39 +1,68 @@
-# ESP32-C3 with WS2812B LEDs
+Currently in development. 
 
-My version of 'bindicator' originally written by Darren Tarbard. 
+Tasks:
+- Recieve/transmit packets and extract iBoost information - Nearly Done...
+- Feed data to existing MQTT queue on the Raspberry Pi
+- Raspberry Pi - Write information to website (and possible InfluxDb)
+- Use a different board/add a display
 
-This project was written using Visual Studio Code and the PlatformIO extension to manage the project.
+# iBoost Monitor
 
-This project has 2 methods for retrieving what bin type is due for emptying in the current week. The first is a very simple node.js application I wrote on our website (I can not do what I want due to limited access because of the hosting company) which returns the bin type and the second method is to download a .json file and do the logic on the ESP32-C3.  Due to our local council only releasing a pdf of the bin collections at the biginning of each year I have to manually enter the values in to the .json file.  Due to the (current) limited access to our website I am unable to install the node.js libraries I would like to so I can just use the .json file for both methods.
+[Marlec iBoost] Monitor (https://www.marlec.co.uk/product/solar-iboost/)
 
-Update: I have now created a simple python script (createjsonfile.py) to create the .json file that this program requires.  It's specific to this program and requires modification to set up the start date.  It expects the first week it generates to be an 'rgf' week.  I might revisit this in the future and give it command line options so save modifying every time I need to run it.  Note: No more than 1 years of data should be created as that's as much space I've allocated in the program if it has to download the .json file and work out the bin type on the micro processor.
+This project is based on the original by [JMSwanson / ESP-Home-iBoost](https://github.com/JNSwanson/ESP-Home-iBoost) which integrates with ESPHome which I currently do not use.
 
-I am looking at storing the information in weekly segments to reduce the size of the file(s) but went for the quick and dirty method of one line per day to start with.
+This project uses an ESP32 and a [CC1101 TI radio module](https://www.ti.com/lit/ds/symlink/cc1100.pdf).  It was written using 
+VSCode and the PlatformIO plug-in. I used the same radio library as JMSwanson as it works.
 
-ESP32-C3 information: Chip Model ESP32-C3, ChipRevision 4, Cpu Freq 160, SDK Version v4.4.2
+Currently using an ESP32 Wroom 32 and a CC1101 Module purchased from eBay.
 
-ESP32-C3 and LEDs purchased via Aliexpress.
+## Wiring 
 
-Libraries used: NeoPixel, ArduinoJson.
+(images/iBoostMonitor.png)
 
-3D model of bin courtesy of Printables: https://www.printables.com/model/189899-wheelie-bin-for-the-bindicatorbindaycator, printed by my son-in-law
+## Frequency tuning
 
-The Bin will light up a specific colour which will correspond to the colour of the bin that needs taking out that week. E.g. Red for general waste, Green and Blue for garden waste and recycling, and just Blue for the week our local council only collects recycling.
+The CC1101 modules can be a little off with the frequency.  This affects the quality of the received packets and can dramatically decrease the range at which you can receive packets from the iBoost.
+You can buy a better Xtal like an Epson X1E0000210666 from Farnell (2471832), or change the frequency in initialisation. For my module I needed to set the frequency to 838.35MHz, I wasn't prepared to do any SMD soldering!
 
-Now deployed at our house and my daughters, who requested this project as she kept forgetting which bin to put out each week!
+Below are some suggested values.  The default is/should be 868300000 Hz.
 
-Before assembly
-![alt text width="100"](/pictures/assembly.jpg)
+|    Freq   | Dec     | HEX    |
+|:---------:|---------|--------|
+| 868425000 | 2188965 | 2166A5 |
+| 868400000 | 2188902 | 216666 |
+| 868375000 | 2188839 | 216627 |
+| 868350000 | 2188776 | 2165E8 |
+| 868325000 | 2188713 | 2165A9 |
+| *868300000* | *2188650* | *21656A* |
+| 868275000 | 2188587 | 21652B |
+| 868250000 | 2188524 | 2164EC |
+| 868225000 | 2188461 | 2164AD |
+| 868200000 | 2188398 | 21646E |
+| 868175000 | 2188335 | 21642F |
 
-Inside the bin!
-![alt text width="100"](/pictures/inside.jpg)
 
-Recycling week (Garden and Recycling waste)
-![alt text width="100"](/pictures/recyclingweek.jpg)
+To make these changes you will need to change these lines:
+```
+radio.writeRegister(CC1101_FREQ2, 0x21);
+radio.writeRegister(CC1101_FREQ1, 0x65);
+radio.writeRegister(CC1101_FREQ0, 0x6a);
+```
 
-Development - Non recylcing week
-![alt text width="100"](/pictures/dev.jpg)
+Look at the LQI value in the debug output for an indication of received packet quality, lower is better.  
 
-ESP32-C3
-![alt text width="100"](/pictures/c3.jpg)
+When looking at the debug output of the received packets are printed. The third byte represents the source of the packet:
+- 01 - Clamp sensor / sender
+- 21 - iBoost Buddy sending a request
+- 22 - iBoost main unit metrics data
 
+You should optimize receive quality for the iBoost main unit (0x22). I don't have in iBoost Buddy so I never saw any of those packets.
+
+## CC1101 Packet Format
+
+(images/cc1101-packet-format.png
+
+## ESP32 Wroom 32 Pinout
+
+(images/ESP32-pinout-30pins.png)

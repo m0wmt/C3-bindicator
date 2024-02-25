@@ -1,0 +1,28 @@
+To read the Marlec iBoost with rtl_433 the following gives us an output
+   sudo rtl_433 -R 0 -f 868.298M -X 'n=Marlec,m=FSK_PCM,s=10,l=10,g=1000,r=2000,preamble=aad391d391'
+
+Info on whats going on here:
+  https://github.com/merbanan/rtl_433/issues/1739
+
+Wordpress write up by David on the protocol:
+  https://miscsolutions.wordpress.com/2022/10/02/home-energy-management-system-part-2-hacking-the-iboost-protocol/
+
+CC1101 Spec:
+  https://www.ti.com/lit/ds/symlink/cc1100.pdf
+  
+To attach SDR to WSL (Ubuntu) we need to list the devices in windows command window (admin) and then
+attach to WSL, don't forget to remove from WSL to be able to use the SDR in windows!
+usbipd list
+usbipd attach --wsl --busid 1-1
+usbipd detach --wsl --busid 1-1
+
+Example output, SDR is 1-1 in this example.
+C:>usbipd list
+Connected:
+BUSID  VID:PID    DEVICE                                                        STATE
+1-1    0bda:2838  Bulk-In, Interface                                            Attached
+1-2    03f0:134a  USB Input Device                                              Not shared
+1-6    138a:0097  Synaptics WBDI - SGX                                          Not shared
+1-7    8087:0a2b  Intel(R) Wireless Bluetooth(R)                                Not shared
+1-8    0bda:58db  Integrated Camera                                             Not shared
+1-9    058f:9540  Alcor Micro USB Smart Card Reader                             Not shared

@@ -1,0 +1,57 @@
+Main unit heating water with 0.4n Kw of power here, couple of times down to 0.3n (7-9), using only
+solar power so may be a little of export here as I believe that 200w export is the limit before the 
+heater is turned on. Len 2c = 44 decimal which is what we expect, along with the sender being the
+clamp (01).
+Len Addr CT     Data (40 bytes)                                                                                                          CRC?
+2c  23b3 01 00 [00 00 03 02 06 08 09 0a 14 12 1b 1a 0f 05 06 03 00 00 00 00 00 00 04 0b 0a 0d 0a 0b 14 14 1c 19 0f 07 0a 05 02 00 00 00] e2b9 8
+2c  23b3 01 00 [00 03 09 07 04 07 08 12 10 17 12 08 03 02 06 02 00 00 00 00 00 07 0d 0e 0c 0c 09 12 12 1d 11 08 03 06 06 03 00 00 00 00] f655 8
+2c  23b3 01 00 [07 08 08 06 06 12 15 23 1d 0d 04 06 03 02 00 00 00 00 00 01 05 04 08 02 06 12 10 20 19 0a 03 05 02 02 00 00 00 00 00 02] aca6 0
+2c  23b3 01 00 [18 1c 12 08 04 07 03 01 00 00 00 00 00 04 03 04 0a 01 09 13 15 23 17 06 04 09 05 00 00 00 00 00 00 03 05 04 09 03 09 13] 17db 8
+2c  23b3 01 00 00000000010506070a040f111e190c05030601000000000001070b040607111221190905020303003 6058
+2c  23b3 01 00 14151a180803070201000000000003070804080d14181b120504080101000000000004050604060d1 8b20
+2c  23b3 01 00 0001080903080810101b190e06020502000000000004020808060511111c1a0e05050402000000005 ee44
+2c  23b3 01 00 00000000000105050a0b0a091311201503040704000000000000040a0908080c14121f15030407004 afa0
+
+
+Example packets from Clamp (23,b3,01,00) and Main unit (23,b3,22,00)
+
+Sent request: 0xCA
+Frame: 23,b3,22,00,00,00,00,01,00,00,00,02,00,00,00,00,00,00,77,e4,fb,ff,a0,a0,ca,09,0b,00,00,00,00,00,00,00,00,00,00,len=37 RSSI=-51 LQI=4
+Heating=0,P1=-269193,Import=-747,P2=2825,P3=0,P4=0,Water Tank HOT,Sender Battery OK,Today=2825,Yesterday=2625,Last 7 Days=13345,Last 28 Days=58883,Total=1832943,Boost Time=0
+Frame: 23,b3,01,00,1a,0f,09,00,00,00,00,00,00,00,00,00,00,04,0f,1e,27,25,1a,19,1b,11,0a,01,00,00,00,00,00,00,00,00,00,08,11,20,27,24,1a,1b,len=44 RSSI=-72 LQI=7
+Sent request: 0xCB
+Frame: 23,b3,22,00,00,00,00,01,00,00,00,02,00,00,00,00,00,00,4d,f7,fb,ff,a0,a0,cb,41,0a,00,00,00,00,00,00,00,00,00,00,len=37 RSSI=-51 LQI=5
+Heating=0,P1=-264371,Import=-734,P2=2625,P3=0,P4=0,Water Tank HOT,Sender Battery OK,Today=2825,Yesterday=2625,Last 7 Days=13345,Last 28 Days=58883,Total=1832943,Boost Time=0
+Frame: 23,b3,01,00,08,00,00,00,00,00,00,00,00,00,00,08,12,24,28,22,18,1a,18,0f,09,00,00,00,00,00,00,00,00,00,00,0a,14,26,27,20,17,1d,17,10,len=44 RSSI=-72 LQI=4
+Sent request: 0xCC
+Frame: 23,b3,22,00,00,00,00,01,00,00,00,02,00,00,00,00,00,00,50,b5,fb,ff,a0,a0,cc,21,34,00,00,00,00,00,00,00,00,00,00,len=37 RSSI=-50 LQI=1
+Heating=0,P1=-281264,Import=-781,P2=13345,P3=0,P4=0,Water Tank HOT,Sender Battery OK,Today=2825,Yesterday=2625,Last 7 Days=13345,Last 28 Days=58883,Total=1832943,Boost Time=0
+Frame: 23,b3,01,00,00,00,00,00,00,00,00,01,0c,16,26,27,1d,19,1d,12,0a,04,00,00,00,00,00,00,00,00,00,00,0c,15,26,26,1c,19,1c,12,0a,03,00,00,len=44 RSSI=-72 LQI=9
+Sent request: 0xCD
+Frame: 23,b3,22,00,00,00,00,01,00,00,00,02,00,00,00,00,00,00,d0,33,fc,ff,a0,a0,cd,03,e6,00,00,00,00,00,00,00,00,00,00,len=37 RSSI=-50 LQI=1
+Heating=0,P1=-248880,Import=-691,P2=58883,P3=0,P4=0,Water Tank HOT,Sender Battery OK,Today=2825,Yesterday=2625,Last 7 Days=13345,Last 28 Days=58883,Total=1832943,Boost Time=0
+Frame: 23,b3,01,00,03,0e,1c,27,26,1c,19,1f,13,0c,01,00,00,00,00,00,00,00,00,00,01,0c,19,28,28,1b,17,1f,14,0d,00,00,00,00,00,00,00,00,00,00,len=44 RSSI=-72 LQI=3
+Sent request: 0xCE
+Frame: 23,b3,22,00,00,00,00,01,00,00,00,02,00,00,00,00,00,00,9a,d2,fb,ff,a0,a0,ce,ef,f7,1b,00,00,00,00,00,00,00,00,00,len=37 RSSI=-50 LQI=3
+Heating=0,P1=-273766,Import=-760,P2=1832943,P3=0,P4=0,Water Tank HOT,Sender Battery OK,Today=2825,Yesterday=2625,Last 7 Days=13345,Last 28 Days=58883,Total=1832943,Boost Time=0
+Frame: 23,b3,01,00,0c,02,00,00,00,00,00,00,00,00,00,02,0d,1a,29,28,1c,17,1e,13,0b,02,00,00,00,00,00,00,00,00,00,04,0e,1d,29,26,1b,18,1d,12,len=44 RSSI=-72 LQI=5
+
+Octopus reckons we're importing about 2630 Watts.
+       0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36
+Frame: 23,b3,22,00,00,00,01,00,00,00,00,02,00,00,00,00,00,00,6e,c4,0f,00,a0,a0,cb,41,0a,00,00,00,00,00,00,00,00,00,00,len=37 RSSI=-50 LQI=1
+Heating=0,P1=1033326,Import=2870,P2=2625,P3=0,P4=0,Water Heating OFF,Sender Battery OK,Today=2825,Yesterday=2625,Last 7 Days=13345,Last 28 Days=58883,Total=1832943,Boost Time=0
+Frame: 23,b3,22,00,00,00,01,00,00,00,00,02,00,00,00,00,00,00,f4,fd,0e,00,a0,a0,cc,21,34,00,00,00,00,00,00,00,00,00,00,len=37 RSSI=-49 LQI=1
+Heating=0,P1=982516,Import=2729,P2=13345,P3=0,P4=0,Water Heating OFF,Sender Battery OK,Today=2825,Yesterday=2625,Last 7 Days=13345,Last 28 Days=58883,Total=1832943,Boost Time=0
+
+Sent request: Saved In Total
+Frame: 23,b3,22,00,00,00,00,01,00,00,00,02,00,00,00,00,00,00,52,65,f5,ff,a0,a0,ce,ef,f7,1b,00,00,00,00,00,00,00,00,00,len=37 RSSI=-52 LQI=3
+Heating=0,P1=-694958,Import=-1930,P2=1832943,P3=0,P4=0,Water Tank HOT,Sender Battery OK,Today=2825,Yesterday=2625,Last 7 Days=13345,Last 28 Days=58883,Total=1832943,Boost Time=0
+
+    Main unit                   Received data above
+    Today: 2.82 kWh             2825
+    Yesterday: 2.62 kWh         2625
+    Last 7 Days: 13.34 kWh      13345
+    Last 28 Days: 58.88 kWh     58883
+    Total Saved: 1832.94 kWh    1832943
+
+Frame 11 always = 2
