@@ -22,11 +22,12 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
+#include "lwip/apps/sntp.h"
 
 #include "config.h"
 
 // CaptureLog setup
-#define CLOG_ENABLE false              // this must be defined before cLog.h is included 
+#define CLOG_ENABLE true              // this must be defined before cLog.h is included 
 #include "cLog.h"
 
 #if CLOG_ENABLE
@@ -43,7 +44,7 @@ CLOG_NEW myLog1(maxEntries, maxEntryChars, NO_TRIGGER, NO_WRAP);
 #define BRIGHTER 7              // hour to set LEDs brighter
 
 #define DIM 35                  // dim value for illumination of the LEDs
-#define BRIGHT 250              // bright value for illumination of the LEDs
+#define BRIGHT 240              // bright value for illumination of the LEDs
 
 typedef enum {
     BIN_ERROR,
@@ -199,8 +200,11 @@ void loop(void) {
 
     int currentHour = getCurrentHour();
     // 00:00 to 00:59, update bin - as we are checking every 'n' minutes this 
-    // should be fine for now - needs different logic though!!
-    if ((currentHour == 0) && (update == true)) {   
+    // should be fine for now - needs different logic though!!  Due to clock changes (winter/summer)
+    // time checking that currentHour == 0 doesn't work as the server doesn't know about clock changes!!!!
+    // Changing this to 1am local time because of offset, in summer the bin will now change at 1am, in
+    // the winter it'll be midnight.  It's this or pass the date to the server?
+    if ((currentHour == 1) && (update == true)) {   
         //check bin colours and update;
         if (enableWiFi()) {
             ntpTime();
@@ -341,11 +345,21 @@ void updateBin(void) {
  * 
  */
 void ntpTime(void) {
-    configTime(0, 0, SNTP_TIME_SERVER);
+    // According to various forums configTime on the ESP32 does not honor the TX env
+    // configTime(0, 0, SNTP_TIME_SERVER);
 
     // Set timezone - London for us
     setenv("TZ", "GMT0BST,M3.5.0/1,M10.5.0", 1);
     tzset();
+
+  // configTime on the ESP32 does not honor the TZ env, unlike the ESP8266
+  
+    sntp_stop(); 
+    sntp_setoperatingmode(SNTP_OPMODE_POLL); 
+
+    sntp_setservername(0, SNTP_TIME_SERVER); 
+ 
+    sntp_init(); 
 }
 
 /**

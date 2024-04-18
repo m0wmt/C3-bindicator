@@ -22,7 +22,7 @@ import json
 binDate, binType = [], []
 
 # Date to start the data from
-startDate = datetime.datetime(2024, 1, 6)     #year, month, day
+startDate = datetime.datetime(2024, 8, 3)     #year, month, day
 
 # Days offset used by timedelta to increase day to the next day
 offset = 0
