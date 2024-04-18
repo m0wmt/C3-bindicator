@@ -27,7 +27,7 @@
 #include "config.h"
 
 // CaptureLog setup
-#define CLOG_ENABLE true              // this must be defined before cLog.h is included 
+#define CLOG_ENABLE false       // this must be defined before cLog.h is included 
 #include "cLog.h"
 
 #if CLOG_ENABLE
@@ -241,7 +241,7 @@ void goToSleep(void) {
     getLocalTime(&timeinfo);
 
     #if CLOG_ENABLE
-    CLOG(myLog1.add(), "Off to light-sleep for %ld minutes", sleep_timer/60);
+    CLOG(myLog1.add(), "Off to light-sleep for %ld minute(s)", sleep_timer/60);
 
     Serial.println(F(""));
     Serial.println(F("## This is myLog1 ##"));
