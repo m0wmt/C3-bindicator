@@ -204,7 +204,7 @@ void loop(void) {
     // time checking that currentHour == 0 doesn't work as the server doesn't know about clock changes!!!!
     // Changing this to 1am local time because of offset, in summer the bin will now change at 1am, in
     // the winter it'll be midnight.  It's this or pass the date to the server?
-    if ((currentHour == 1) && (update == true)) {   
+    if ((currentHour == 0) && (update == true)) {   
         //check bin colours and update;
         if (enableWiFi()) {
             ntpTime();
