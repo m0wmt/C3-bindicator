@@ -8,6 +8,9 @@ This project has 2 methods for retrieving what bin type is due for emptying in t
 
 Update: I have now created a simple python script (createjsonfile.py) to create the .json file that this program requires.  It's specific to this program and requires modification to set up the start date.  It expects the first week it generates to be an 'rgf' week.  I might revisit this in the future and give it command line options so save modifying every time I need to run it.  Note: No more than 1 years of data should be created as that's as much space I've allocated in the program if it has to download the .json file and work out the bin type on the micro processor.
 
+Update: 2026 - The local council have decided that we will be moving to a 1,2,3+ bin collection system in 2027.  Have started
+to code the possible bin combinations so that I am ready for the changes.
+
 I am looking at storing the information in weekly segments to reduce the size of the file(s) but went for the quick and dirty method of one line per day to start with.
 
 ESP32-C3 information: Chip Model ESP32-C3, ChipRevision 4, Cpu Freq 160, SDK Version v4.4.2
