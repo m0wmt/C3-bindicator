@@ -48,9 +48,14 @@ CLOG_NEW myLog1(maxEntries, maxEntryChars, NO_TRIGGER, NO_WRAP);
 
 typedef enum {
     BIN_ERROR,
-    RECYCLING_GARDEN_FOOD,
+    FOOD,
     RECYCLING_FOOD,
-    WASTE_FOOD
+    RECYCLING_GARDEN_FOOD,
+    GARDEN_FOOD,
+    WASTE_FOOD,
+    WASTE_RECYCLING_FOOD,
+    WASTE_GARDEN_FOOD,
+    WASTE_RECYCLING_GARDEN_FOOD
 } this_weeks_bins_t;
 
 typedef enum {
@@ -67,15 +72,19 @@ const uint32_t whitePixel = ws2812b.Color(255, 255, 255);
 const uint32_t unlitPixel = ws2812b.Color(0, 0, 0);
 
 typedef struct {
-    uint32_t red = ws2812b.Color(255, 0, 0);
-    uint32_t green = ws2812b.Color(0, 255, 0);
-    uint32_t blue = ws2812b.Color(0, 0, 255);
-    uint32_t violet = ws2812b.Color(246, 0, 255);
-    uint32_t yellow = ws2812b.Color(255, 255, 0);
+    uint32_t red = ws2812b.Color(255, 0, 0);        // General waste
+    uint32_t green = ws2812b.Color(0, 255, 0);      // Garden
+    uint32_t blue = ws2812b.Color(0, 0, 255);       // Recycling
+    uint32_t violet = ws2812b.Color(246, 0, 255);   // Start-up/error
+    uint32_t tan = ws2812b.Color(210, 180, 140);    // Food
+    uint32_t sandybrown = ws2812b.Color(244, 164, 96); // Food
+    uint32_t goldenrod = ws2812b.Color(218, 165, 32);  // Food
+    uint32_t brown = ws2812b.Color(165, 42, 42);       // Food
+    uint32_t saddlebrown = ws2812b.Color(139, 69, 19); // Food
+    uint32_t sienna = ws2812b.Color(160, 82, 45);      // Food
 } colours_t;
 
 const long sleep_duration = 10; // number of minutes to go to sleep
-
 
 /* Function prototypes */
 void goToSleep(void);
@@ -190,10 +199,10 @@ void loop(void) {
 
     // TESTING ONLY //
     // ws2812b.clear();
-    // ws2812b.setPixelColor(0, pixelColours.yellow);
-    // ws2812b.setPixelColor(1, pixelColours.yellow);
-    // ws2812b.setPixelColor(2, pixelColours.yellow);
-    // ws2812b.setPixelColor(3, pixelColours.yellow);
+    // ws2812b.setPixelColor(0, pixelColours.tan);
+    // ws2812b.setPixelColor(1, pixelColours.tan);
+    // ws2812b.setPixelColor(2, pixelColours.tan);
+    // ws2812b.setPixelColor(3, pixelColours.tan);
     // ws2812b.show();
     // delay(5000);
     // END OF TESTING //
@@ -407,10 +416,20 @@ this_weeks_bins_t getBinColour(void)
                 CLOG(myLog1.add(), "  Bin type: %s", bins);
                 if (bins == "rgf") {
                     retcode = RECYCLING_GARDEN_FOOD;
-                } else if (bins == "rf") {
-                    retcode = RECYCLING_FOOD;
                 } else if (bins == "wf") {
                     retcode = WASTE_FOOD;
+                } else if (bins == "rf") {
+                    retcode = RECYCLING_FOOD;
+                } else if (bins == "f") {
+                    retcode = FOOD;
+                } else if (bins == "gf") {
+                    retcode = GARDEN_FOOD;
+                } else if (bins == "wrf") {
+                    retcode = WASTE_RECYCLING_FOOD;
+                } else if (bins == "wgf") {
+                    retcode = WASTE_GARDEN_FOOD;
+                } else if (bins == "wrgf") {
+                    retcode = WASTE_RECYCLING_GARDEN_FOOD;
                 } else {
                     retcode = BIN_ERROR;
                 }
@@ -488,10 +507,20 @@ this_weeks_bins_t getBinColourFromFile(void) {
                     // now set return code for the type of bins found
                     if (bin_type == "rgf") {
                         retcode = RECYCLING_GARDEN_FOOD;
-                    } else if (bin_type =="rf") {
-                        retcode = RECYCLING_FOOD;
                     } else if (bin_type == "wf") {
                         retcode = WASTE_FOOD;
+                    } else if (bin_type == "rf") {
+                        retcode = RECYCLING_FOOD;
+                    } else if (bin_type == "f") {
+                        retcode = FOOD;
+                    } else if (bin_type == "gf") {
+                        retcode = GARDEN_FOOD;
+                    } else if (bin_type == "wrf") {
+                        retcode = WASTE_RECYCLING_FOOD;
+                    } else if (bin_type == "wgf") {
+                        retcode = WASTE_GARDEN_FOOD;
+                    } else if (bin_type == "wrgf") {
+                        retcode = WASTE_RECYCLING_GARDEN_FOOD;
                     } else {
                         retcode = BIN_ERROR;
                     }
@@ -517,22 +546,14 @@ void illuminateBin(void) {
 
     // Get bin types and show appropriate colours
     switch (bin_type) {
-        case RECYCLING_GARDEN_FOOD:
+        case FOOD:
             // set colour
-            ws2812b.setPixelColor(0, pixelColours.green);
-            ws2812b.setPixelColor(1, pixelColours.green);
-            ws2812b.setPixelColor(2, pixelColours.blue);
-            ws2812b.setPixelColor(3, pixelColours.blue);
-            CLOG(myLog1.add(), "  Bin Type: Recycling and Garden");
-        break;
-        case WASTE_FOOD:
-            // set colour
-            ws2812b.setPixelColor(0, pixelColours.red);
-            ws2812b.setPixelColor(1, pixelColours.red);
-            ws2812b.setPixelColor(2, pixelColours.red);
-            ws2812b.setPixelColor(3, pixelColours.red);
-            CLOG(myLog1.add(), "  Bin Type: Normal Waste");
-        break;
+            ws2812b.setPixelColor(0, pixelColours.brown);
+            ws2812b.setPixelColor(1, pixelColours.brown);
+            ws2812b.setPixelColor(2, pixelColours.brown);
+            ws2812b.setPixelColor(3, pixelColours.brown);
+            CLOG(myLog1.add(), "  Bin Type: Food only");
+            break;
         case RECYCLING_FOOD:
             // set colour
             ws2812b.setPixelColor(0, pixelColours.blue);
@@ -540,7 +561,55 @@ void illuminateBin(void) {
             ws2812b.setPixelColor(2, pixelColours.blue);
             ws2812b.setPixelColor(3, pixelColours.blue);
             CLOG(myLog1.add(), "  Bin Type: Recycling only");
+            break;
+        case GARDEN_FOOD:
+            // set colour
+            ws2812b.setPixelColor(0, pixelColours.green);
+            ws2812b.setPixelColor(1, pixelColours.green);
+            ws2812b.setPixelColor(2, pixelColours.green);
+            ws2812b.setPixelColor(3, pixelColours.green);
+            CLOG(myLog1.add(), "  Bin Type: Garden only");
+            break;
+        case RECYCLING_GARDEN_FOOD:
+            // set colour
+            ws2812b.setPixelColor(0, pixelColours.green);
+            ws2812b.setPixelColor(1, pixelColours.green);
+            ws2812b.setPixelColor(2, pixelColours.blue);
+            ws2812b.setPixelColor(3, pixelColours.blue);
+            CLOG(myLog1.add(), "  Bin Type: Recycling and Garden");
+            break;
+        case WASTE_FOOD:
+            // set colour
+            ws2812b.setPixelColor(0, pixelColours.red);
+            ws2812b.setPixelColor(1, pixelColours.red);
+            ws2812b.setPixelColor(2, pixelColours.red);
+            ws2812b.setPixelColor(3, pixelColours.red);
+            CLOG(myLog1.add(), "  Bin Type: Normal Waste only");
         break;
+        case WASTE_RECYCLING_FOOD:
+            // set colour
+            ws2812b.setPixelColor(0, pixelColours.blue);
+            ws2812b.setPixelColor(1, pixelColours.blue);
+            ws2812b.setPixelColor(2, pixelColours.red);
+            ws2812b.setPixelColor(3, pixelColours.red);
+            CLOG(myLog1.add(), "  Bin Type: Recycling and General Waste");
+            break;
+        case WASTE_GARDEN_FOOD:
+            // set colour
+            ws2812b.setPixelColor(0, pixelColours.green);
+            ws2812b.setPixelColor(1, pixelColours.green);
+            ws2812b.setPixelColor(2, pixelColours.red);
+            ws2812b.setPixelColor(3, pixelColours.red);
+            CLOG(myLog1.add(), "  Bin Type: Garden and General Waste");
+            break;
+        case WASTE_RECYCLING_GARDEN_FOOD:
+            // set colour
+            ws2812b.setPixelColor(0, pixelColours.blue);
+            ws2812b.setPixelColor(1, pixelColours.green);
+            ws2812b.setPixelColor(2, pixelColours.red);
+            ws2812b.setPixelColor(3, pixelColours.brown);
+            CLOG(myLog1.add(), "  Bin Type: All bins!");
+            break;
         default:    // BIN_ERROR
             // set error colour
             if (NODE_ERROR == status) {
@@ -619,7 +688,7 @@ void setBrightness(uint8_t brightness) {
         pixelColours.green = ws2812b.Color(brightness*0/255, brightness*255/255, brightness*0/255);
         pixelColours.blue = ws2812b.Color(brightness*0/255, brightness*0/255, brightness*255/255);
         pixelColours.violet = ws2812b.Color(brightness*246/255, brightness*0/255, brightness*255/255);
-        pixelColours.yellow = ws2812b.Color(brightness*255/255, brightness*255/255, brightness*0/255);
+        pixelColours.brown = ws2812b.Color(brightness*255/255, brightness*255/255, brightness*0/255);
         currentBrightness = brightness;
     }
 }
