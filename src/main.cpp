@@ -27,7 +27,7 @@
 #include "config.h"
 
 // CaptureLog setup
-#define CLOG_ENABLE true       // this must be defined before cLog.h is included 
+#define CLOG_ENABLE false       // this must be defined before cLog.h is included 
 #include "cLog.h"
 
 #if CLOG_ENABLE
@@ -184,32 +184,29 @@ void setup() {
     
     illuminateBin();
 
-    // FOOD, RECYCLING_FOOD, RECYCLING_GARDEN_FOOD, GARDEN_FOOD, WASTE_FOOD, WASTE_RECYCLING_FOOD, WASTE_GARDEN_FOOD,
-    //     WASTE_RECYCLING_GARDEN_FOOD
+    // bin_type = RECYCLING_FOOD; // FOOD;
+    // illuminateBin();
+    // delay(5000);
 
-    bin_type = RECYCLING_FOOD; // FOOD;
-    illuminateBin();
-    delay(5000);
+    // bin_type = GARDEN_FOOD; // FOOD;
+    // illuminateBin();
+    // delay(5000);
 
-    bin_type = GARDEN_FOOD; // FOOD;
-    illuminateBin();
-    delay(5000);
+    // bin_type = WASTE_RECYCLING_FOOD; // FOOD;
+    // illuminateBin();
+    // delay(5000);
 
-    bin_type = WASTE_RECYCLING_FOOD; // FOOD;
-    illuminateBin();
-    delay(5000);
+    // bin_type = WASTE_FOOD; // FOOD;
+    // illuminateBin();
+    // delay(5000);
 
-    bin_type = WASTE_FOOD; // FOOD;
-    illuminateBin();
-    delay(5000);
+    // bin_type = FOOD; // FOOD;
+    // illuminateBin();
+    // delay(5000);
 
-    bin_type = FOOD; // FOOD;
-    illuminateBin();
-    delay(5000);
-
-    bin_type = WASTE_RECYCLING_GARDEN_FOOD; // FOOD;
-    illuminateBin();
-    delay(5000);
+    // bin_type = WASTE_RECYCLING_GARDEN_FOOD; // FOOD;
+    // illuminateBin();
+    // delay(5000);
 
     disableWiFi();
 
