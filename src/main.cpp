@@ -27,7 +27,7 @@
 #include "config.h"
 
 // CaptureLog setup
-#define CLOG_ENABLE false       // this must be defined before cLog.h is included 
+#define CLOG_ENABLE true       // this must be defined before cLog.h is included 
 #include "cLog.h"
 
 #if CLOG_ENABLE
@@ -76,7 +76,10 @@ typedef struct {
     uint32_t green = ws2812b.Color(0, 255, 0);      // Garden
     uint32_t blue = ws2812b.Color(0, 0, 255);       // Recycling
     uint32_t violet = ws2812b.Color(246, 0, 255);   // Start-up/error
-    uint32_t tan = ws2812b.Color(210, 180, 140);    // Food
+    
+//    uint32_t tan = ws2812b.Color(210, 180, 140);    // Food
+    uint32_t test = ws2812b.Color(255, 174, 66); //(10, 4, 0);       // Food - not tan, testing colours
+
     uint32_t sandybrown = ws2812b.Color(244, 164, 96); // Food
     uint32_t goldenrod = ws2812b.Color(218, 165, 32);  // Food
     uint32_t brown = ws2812b.Color(165, 42, 42);       // Food
@@ -148,7 +151,7 @@ void setup() {
     Serial.printf("Flash Size %d, Flash Speed %d\n", ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
     Serial.println(F("##################################\n\n"));
     #endif
-    
+
     if (enableWiFi() == true) {
         // Turn off first error light
         ws2812b.setPixelColor(0, unlitPixel);                
@@ -178,7 +181,35 @@ void setup() {
         update = true;
     } 
     
+    
     illuminateBin();
+
+    // FOOD, RECYCLING_FOOD, RECYCLING_GARDEN_FOOD, GARDEN_FOOD, WASTE_FOOD, WASTE_RECYCLING_FOOD, WASTE_GARDEN_FOOD,
+    //     WASTE_RECYCLING_GARDEN_FOOD
+
+    bin_type = RECYCLING_FOOD; // FOOD;
+    illuminateBin();
+    delay(5000);
+
+    bin_type = GARDEN_FOOD; // FOOD;
+    illuminateBin();
+    delay(5000);
+
+    bin_type = WASTE_RECYCLING_FOOD; // FOOD;
+    illuminateBin();
+    delay(5000);
+
+    bin_type = WASTE_FOOD; // FOOD;
+    illuminateBin();
+    delay(5000);
+
+    bin_type = FOOD; // FOOD;
+    illuminateBin();
+    delay(5000);
+
+    bin_type = WASTE_RECYCLING_GARDEN_FOOD; // FOOD;
+    illuminateBin();
+    delay(5000);
 
     disableWiFi();
 
@@ -195,7 +226,6 @@ void loop(void) {
     delay(5000); // delay for serial to begin, ESP32 can be slow to start serial output!	
 
 	logWakeupReason();
-    #endif
 
     // TESTING ONLY //
     // ws2812b.clear();
@@ -206,6 +236,9 @@ void loop(void) {
     // ws2812b.show();
     // delay(5000);
     // END OF TESTING //
+
+#endif
+
 
     int currentHour = getCurrentHour();
     // 00:00 to 00:59, update bin - as we are checking every 'n' minutes this 
@@ -548,12 +581,20 @@ void illuminateBin(void) {
     switch (bin_type) {
         case FOOD:
             // set colour
-            ws2812b.setPixelColor(0, pixelColours.brown);
-            ws2812b.setPixelColor(1, pixelColours.brown);
-            ws2812b.setPixelColor(2, pixelColours.brown);
-            ws2812b.setPixelColor(3, pixelColours.brown);
+            ws2812b.setPixelColor(0, pixelColours.test);
+            ws2812b.setPixelColor(1, pixelColours.test);
+            ws2812b.setPixelColor(2, pixelColours.test);
+            ws2812b.setPixelColor(3, pixelColours.test);
             CLOG(myLog1.add(), "  Bin Type: Food only");
             break;
+
+            // uint32_t tan = ws2812b.Color(210, 180, 140);       // Food
+            // uint32_t sandybrown = ws2812b.Color(244, 164, 96); // Food
+            // uint32_t goldenrod = ws2812b.Color(218, 165, 32);  // Food
+            // uint32_t brown = ws2812b.Color(165, 42, 42);       // Food
+            // uint32_t saddlebrown = ws2812b.Color(139, 69, 19); // Food
+            // uint32_t sienna = ws2812b.Color(160, 82, 45);      // Food
+
         case RECYCLING_FOOD:
             // set colour
             ws2812b.setPixelColor(0, pixelColours.blue);
@@ -604,10 +645,10 @@ void illuminateBin(void) {
             break;
         case WASTE_RECYCLING_GARDEN_FOOD:
             // set colour
-            ws2812b.setPixelColor(0, pixelColours.blue);
-            ws2812b.setPixelColor(1, pixelColours.green);
-            ws2812b.setPixelColor(2, pixelColours.red);
-            ws2812b.setPixelColor(3, pixelColours.brown);
+            ws2812b.setPixelColor(0, pixelColours.test);
+            ws2812b.setPixelColor(1, pixelColours.red);
+            ws2812b.setPixelColor(2, pixelColours.green);
+            ws2812b.setPixelColor(3, pixelColours.blue);
             CLOG(myLog1.add(), "  Bin Type: All bins!");
             break;
         default:    // BIN_ERROR
