@@ -55,11 +55,11 @@ json_array = [{"date": day, "bins": b} for day, b in zip(binDate, binType)]
 #print(json_array)
 
 # Now output the json array to a file, no error checking
-out_file = open("myfile.json", "w") 
+out_file = open("bindicator.json", "w") 
 json.dump(json_array, out_file, indent = 2) 
 out_file.close() 
 
-print('Finished, json data saved in myfile.json')
+print('Finished, json data saved in bindicator.json')
 endDate = startDate + datetime.timedelta(days=offset-1)
 print('  Start date: ' + startDate.strftime("%Y-%m-%d") + '   Bin type: rgf')
 print('  End date:   ' + endDate.strftime("%Y-%m-%d") + '   Bin type: ' + bins)
