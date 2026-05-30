@@ -1,20 +1,26 @@
-'''
-Need a start date and then 7 days (including start date) will be one bin type 
-(rgf by default) and then the next 7 days a different bin type (wf) for as many 
-week as we want.
 
-JSON array should look like this:
-[
-  {
-    "date": "2023-01-01",
-    "bins": "wf"
-  },
-  {
-    "date": "2023-01-04",
-    "bins": "rgf"
-  }
-]
-'''
+# Need a start date and then 7 days (including start date) will be one bin type 
+# (rgf by default) and then the next 7 days a different bin type (wf) for as many 
+# week as we want.
+# 
+# JSON array should look like this:
+# [
+#   {
+#     "date": "2023-01-01",
+#     "bins": "wf"
+#   },
+#   {
+#     "date": "2023-01-04",
+#     "bins": "rgf"
+#   }
+# ]
+#
+# From 2027 some time we will be moving to a 3 week general waste collection!
+#
+# r = recycling, g = garden, f = food, w = general waste.
+#
+# run using> python3 createjsonfile.py
+
 import datetime
 import json
 
@@ -22,12 +28,12 @@ import json
 binDate, binType = [], []
 
 # Date to start the data from
-startDate = datetime.datetime(2024, 8, 3)     #year, month, day
+startDate = datetime.datetime(2026, 5, 23)     #year, month, day
 
 # Days offset used by timedelta to increase day to the next day
 offset = 0
 
-# Range == number of weeks, remember; first weeks output will be rgf
+## Range == number of weeks, remember; first weeks output will be ## rgf ##
 for w in range(30):
     if w % 2 == 0:
         bins = "rgf" # Even
