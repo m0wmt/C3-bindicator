@@ -5,3 +5,5 @@
 #define SNTP_TIME_SERVER "pool.ntp.org"
 #define BINDICATOR_URL "https://URL/bindicator/"
 #define BINDICATOR_FILE_URL "https://URL/bindicator.json"
+#define BINDICATOR_WORKER_URL "https://URL"
+#define USER_TOKEN "USER_TOKEN"

@@ -61,8 +61,9 @@ typedef enum {
 typedef enum {
     NO_ERROR,
     WIFI_ERROR,
-    NODE_ERROR,
-    JSON_ERROR
+    WORKER_ERROR,
+    NODE_AND_WORKER_ERROR,
+    JSON_NODE_AND_WORKER_ERROR
 } status_t;
 
 // Set up library to control LEDs
@@ -97,6 +98,7 @@ void disableWiFi(void);
 void logWakeupReason(void);
 #endif
 void ntpTime(void);
+this_weeks_bins_t getBinColourFromWorker(void);
 this_weeks_bins_t getBinColour(void);
 this_weeks_bins_t getBinColourFromFile(void);
 void illuminateBin(void);
@@ -365,14 +367,19 @@ void updateBin(void) {
 
     bin_type = BIN_ERROR;   // reset bin error flag
     if (WiFi.status() == WL_CONNECTED) {
-        bin_type = getBinColour();
+        bin_type = getBinColourFromWorker();
         if (BIN_ERROR == bin_type) {
-            status = NODE_ERROR;
-            bin_type = getBinColourFromFile();
+            status = WORKER_ERROR;
 
+            bin_type = getBinColour();
             if (BIN_ERROR == bin_type) {
-                status = JSON_ERROR;
-            } 
+                status = NODE_AND_WORKER_ERROR;
+                bin_type = getBinColourFromFile();
+
+                if (BIN_ERROR == bin_type) {
+                    status = JSON_NODE_AND_WORKER_ERROR;
+                } 
+            }
         }
     } else {
         status = WIFI_ERROR;
@@ -402,11 +409,76 @@ void ntpTime(void) {
 }
 
 /**
+ * @brief Get the colour of the bin for current time/day.  This will be achieved by accessing a Cloudflare worker 
+ * where all the heavy lifting will be carried out. It will return a string containing the bin type.
+ * 
+ * The worker gets todays date and then searchs an array to get the bins for this week.
+ * 
+ * @return THIS_WEEKS_BINS Bin type or BIN_ERROR if something goes wrong
+ */
+this_weeks_bins_t getBinColourFromWorker(void)
+{
+    this_weeks_bins_t retcode = BIN_ERROR;
+
+    CLOG(myLog1.add(), "getBinColourFromWorker()");
+
+    // Connect to the server and get current bin information
+    HTTPClient http;
+
+
+    if (! http.begin(BINDICATOR_WORKER_URL)) {
+        CLOG(myLog1.add(), "  Connection failed to: %s", BINDICATOR_WORKER_URL);
+
+        // If we cant connect, show 1 pixel red to indicate an error
+        //pixels.setPixelColor(0, redPixel);
+    } else {
+        CLOG(myLog1.add(), "  Connection succesful to: %s", BINDICATOR_WORKER_URL);
+
+        // Add header for cloudflare worker
+        http.addHeader ("X-User-Token", USER_TOKEN);
+
+        // If we can connect get bin type
+        int httpCode = http.GET();
+        
+        // Check we're getting a HTTP Code 200
+        if (HTTP_CODE_OK == httpCode) {
+            String payload = http.getString();
+            CLOG(myLog1.add(), "  HTTP.get() HTTP_CODE_OK : %s", payload);
+
+            // If using cloudflare worker it returns just a string so no need to parse json object....
+            if (payload == "rgf") {
+                retcode = RECYCLING_GARDEN_FOOD;
+            } else if (payload == "wf") {
+                retcode = WASTE_FOOD;
+            } else if (payload == "rf") {
+                retcode = RECYCLING_FOOD;
+            } else if (payload == "f") {
+                retcode = FOOD;
+            } else if (payload == "gf") {
+                retcode = GARDEN_FOOD;
+            } else if (payload == "wrf") {
+                retcode = WASTE_RECYCLING_FOOD;
+            } else if (payload == "wgf") {
+                retcode = WASTE_GARDEN_FOOD;
+            } else if (payload == "wrgf") {
+                retcode = WASTE_RECYCLING_GARDEN_FOOD;
+            } else {
+                retcode = BIN_ERROR;
+            }
+        } else {
+            CLOG(myLog1.add(), "  Unable to get bin type!");
+        }
+    }
+
+    return retcode;
+}
+
+/**
  * @brief Get the colour of the bin for current time/day.  This will be achieved by accessing a node.js 
  * server on the website where all the heavy lifting will be carried out. It will return a JSON object 
  * containing the bin types.
  * 
- * The server gets todays date and then loops through a .csv file to get the bins for this week.
+ * The server gets todays date and then loops through a .json file to get the bins for this week.
  * 
  * @return THIS_WEEKS_BINS Bin types or BIN_ERROR if something goes wrong
  */
@@ -418,7 +490,8 @@ this_weeks_bins_t getBinColour(void)
 
     // Connect to the server and get current bin information
     HTTPClient http;
-    
+
+
     if (! http.begin(BINDICATOR_URL)) {
         CLOG(myLog1.add(), "  Connection failed to: %s", BINDICATOR_URL);
 
@@ -427,14 +500,19 @@ this_weeks_bins_t getBinColour(void)
     } else {
         CLOG(myLog1.add(), "  Connection succesful to: %s", BINDICATOR_URL);
 
+        // Add header for cloudflare worker
+        //http.addHeader ("X-User-Token", USER_TOKEN);
+
         // If we can connect get bin type
         int httpCode = http.GET();
         
         // Check we're getting a HTTP Code 200
         if (HTTP_CODE_OK == httpCode) {
             String payload = http.getString();
-            CLOG(myLog1.add(), "  HTTP.get() HTTP_CODE_OK");
-            
+            CLOG(myLog1.add(), "  HTTP.get() HTTP_CODE_OK : %s", payload);
+
+            // If using cloudflare worker it returns just a string so no need to parse json object....
+
             // Parse JSON object
             DynamicJsonDocument doc(256);
             DeserializationError err = deserializeJson(doc, payload);
@@ -650,18 +728,24 @@ void illuminateBin(void) {
             break;
         default:    // BIN_ERROR
             // set error colour
-            if (NODE_ERROR == status) {
+            if (NODE_AND_WORKER_ERROR == status) {
                 ws2812b.setPixelColor(0, unlitPixel);
                 ws2812b.setPixelColor(1, unlitPixel);
                 ws2812b.setPixelColor(2, pixelColours.violet);
                 ws2812b.setPixelColor(3, pixelColours.violet);
-                CLOG(myLog1.add(), "  Status: NODE ERROR!");
-            } else if (JSON_ERROR == status) {
+                CLOG(myLog1.add(), "  Status: NODE AND WORKER ERROR!");
+            } else if (WORKER_ERROR == status) {
                 ws2812b.setPixelColor(0, unlitPixel);
                 ws2812b.setPixelColor(1, unlitPixel);
                 ws2812b.setPixelColor(2, unlitPixel);
                 ws2812b.setPixelColor(3, pixelColours.violet);
-                CLOG(myLog1.add(), "  Status: JSON ERROR!");
+                CLOG(myLog1.add(), "  Status: WORKER ERROR!");
+            } else if (JSON_NODE_AND_WORKER_ERROR == status) {
+                ws2812b.setPixelColor(0, pixelColours.violet);
+                ws2812b.setPixelColor(1, unlitPixel);
+                ws2812b.setPixelColor(2, unlitPixel);
+                ws2812b.setPixelColor(3, pixelColours.violet);
+                CLOG(myLog1.add(), "  Status: JSON NODE AND WORKER ERROR!");
             } else if (WIFI_ERROR == status) {
                 ws2812b.setPixelColor(0, pixelColours.violet);
                 ws2812b.setPixelColor(1, unlitPixel);
