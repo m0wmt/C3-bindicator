@@ -6,4 +6,4 @@
 #define BINDICATOR_URL "https://URL/bindicator/"
 #define BINDICATOR_FILE_URL "https://URL/bindicator.json"
 #define BINDICATOR_WORKER_URL "https://URL"
-#define USER_TOKEN "USER_TOKEN"
+#define USER_TOKEN "USER_TOKEN" 

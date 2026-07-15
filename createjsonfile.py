@@ -20,7 +20,7 @@
 # r = recycling, g = garden, f = food, w = general waste.
 #
 # run using> python3 createjsonfile.py
-
+ 
 import datetime
 import json
 

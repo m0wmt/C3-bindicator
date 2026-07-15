@@ -1,5 +1,5 @@
 # ESP32-C3 with WS2812B LEDs
-
+ 
 My version of 'bindicator' originally written by Darren Tarbard. 
 
 This project was written using Visual Studio Code and the PlatformIO extension to manage the project.
