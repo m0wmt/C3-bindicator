@@ -56,7 +56,7 @@ json_array = [{"date": day, "bins": b} for day, b in zip(binDate, binType)]
 
 # Now output the json array to a file, no error checking
 out_file = open("bindicator.json", "w") 
-json.dump(json_array, out_file, separators=(',', ":"))  # Compact JSON structure to save space
+json.dump(json_array, out_file, separators=(',', ":"))  # Compact JSON structure to save disk space.
 out_file.close() 
 
 print('Finished, json data saved in bindicator.json')
